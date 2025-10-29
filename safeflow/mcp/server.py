@@ -59,15 +59,17 @@ def create_safeflow_mcp_server() -> "FastMCP":
     def scan_with_semgrep(
         target_path: str,
         rules: str = "auto",
-        scan_id: Optional[str] = None
+        scan_id: Optional[str] = None,
+        fast_mode: bool = False
     ) -> str:
         """
         使用 Semgrep 进行静态代码分析（SAST）
         
         Args:
             target_path: 要扫描的目标路径
-            rules: Semgrep 规则集（如 'auto', 'p/security-audit'）
+            rules: Semgrep 规则集（如 'auto', 'p/security-audit'），支持逗号分隔多个规则
             scan_id: 可选的扫描 ID，用于追踪
+            fast_mode: 快速模式，跳过大文件和常见目录（推荐用于大型项目）
             
         Returns:
             扫描结果的 JSON 字符串
@@ -82,15 +84,23 @@ def create_safeflow_mcp_server() -> "FastMCP":
             scan_id = f"semgrep_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
         try:
+            # 构建扫描选项
+            options = {
+                "rules": rules
+            }
+            
+            # 快速模式：优化大型项目扫描
+            if fast_mode:
+                options["max_target_bytes"] = 1000000  # 限制单文件最大 1MB
+                options["jobs"] = 4  # 并发扫描
+            
             scan_request = {
                 "scan_id": scan_id,
                 "target": {
                     "type": "LOCAL_PATH",
                     "path": target_path
                 },
-                "options": {
-                    "rules": rules
-                }
+                "options": options
             }
             
             vulnerabilities = semgrep_adapter.run(scan_request)

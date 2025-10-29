@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeFlow - 工作流管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .workflow-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.running {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.pending {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .timestamp {
+            font-size: 11px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3498db;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚀 SafeFlow 工作流管理</h1>
+
+        <div class="card">
+            <h2>创建新工作流</h2>
+            <form id="createForm">
+                <select id="workflowType" style="margin: 10px 0; padding: 8px; width: 100%;">
+                    <option value="CODE_COMMIT">代码提交快速回归</option>
+                    <option value="DEPENDENCY_UPDATE">依赖更新扫描</option>
+                    <option value="EMERGENCY_VULN">紧急漏洞扫描</option>
+                    <option value="RELEASE_REGRESSION">版本发布回归</option>
+                </select>
+                <input type="text" id="targetPath" placeholder="目标路径"
+                    style="margin: 10px 0; padding: 8px; width: 100%;">
+                <button type="submit" class="btn">创建工作流</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>工作流列表</h2>
+            <div id="workflowList" class="workflow-grid">
+                <p>加载中...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/orchestration';
+
+        // 创建工作流
+        document.getElementById('createForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const workflowType = document.getElementById('workflowType').value;
+            const targetPath = document.getElementById('targetPath').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/workflows`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        workflow_type: workflowType,
+                        target: { path: targetPath },
+                        created_by: 'web_user'
+                    })
+                });
+
+                const data = await response.json();
+                alert(`工作流创建成功！ID: ${data.workflow_id}`);
+                loadWorkflows();
+            } catch (error) {
+                alert('创建失败：' + error.message);
+            }
+        });
+
+        // 加载工作流列表
+        async function loadWorkflows() {
+            try {
+                const response = await fetch(`${API_BASE}/workflows`);
+                const data = await response.json();
+
+                const container = document.getElementById('workflowList');
+                if (data.workflows.length === 0) {
+                    container.innerHTML = '<p>暂无工作流</p>';
+                    return;
+                }
+
+                container.innerHTML = data.workflows.map(wf => `
+                    <div class="workflow-card" id="workflow-${wf.workflow_id}">
+                        <h3>${wf.workflow_type}</h3>
+                        <span class="status ${wf.status.toLowerCase()}">${wf.status}</span>
+                        <p style="margin: 10px 0; color: #666; font-size: 12px;">
+                            ID: ${wf.workflow_id}
+                        </p>
+                        <p class="timestamp">
+                            🕐 创建时间: ${formatDateTime(wf.created_at)}
+                        </p>
+                        ${wf.total_vulnerabilities !== undefined ? `
+                        <p style="margin: 5px 0; color: #e74c3c; font-size: 13px; font-weight: 500;">
+                            🐛 发现 ${wf.total_vulnerabilities} 个漏洞
+                        </p>
+                        ` : ''}
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 
+                                ${wf.status === 'SUCCESS' ? '100' :
+                        wf.status === 'FAILED' ? '100' : '50'}%">
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn" onclick="viewDetails('${wf.workflow_id}')">
+                                查看详情
+                            </button>
+                            <button class="btn-danger" onclick="deleteWorkflow('${wf.workflow_id}', event)">
+                                🗑️ 删除
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载失败：', error);
+            }
+        }
+
+        function viewDetails(workflowId) {
+            window.open(`/web/detail.html?id=${workflowId}`, '_blank');
+        }
+
+        async function deleteWorkflow(workflowId, event) {
+            event.stopPropagation(); // 防止触发其他点击事件
+
+            if (!confirm('确定要删除这个工作流吗？\n\n此操作不可恢复，将删除工作流的所有数据（包括检查点和任务执行记录）。')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/workflows/${workflowId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || '删除失败');
+                }
+
+                const result = await response.json();
+
+                // 显示成功消息
+                alert('✅ ' + result.message);
+
+                // 移除卡片（带动画效果）
+                const card = document.getElementById(`workflow-${workflowId}`);
+                if (card) {
+                    card.style.transition = 'opacity 0.3s, transform 0.3s';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        card.remove();
+                        // 如果没有工作流了，显示提示
+                        const container = document.getElementById('workflowList');
+                        if (container.children.length === 0) {
+                            container.innerHTML = '<p>暂无工作流</p>';
+                        }
+                    }, 300);
+                }
+
+            } catch (error) {
+                alert('❌ 删除失败: ' + error.message);
+                console.error('删除失败：', error);
+            }
+        }
+
+        function formatDateTime(dt) {
+            if (!dt) return '-';
+            const date = new Date(dt);
+            const now = new Date();
+            const diff = now - date;
+
+            // 如果是今天，显示相对时间
+            if (diff < 86400000) { // 24小时内
+                if (diff < 3600000) { // 1小时内
+                    const minutes = Math.floor(diff / 60000);
+                    return minutes < 1 ? '刚刚' : `${minutes}分钟前`;
+                } else {
+                    const hours = Math.floor(diff / 3600000);
+                    return `${hours}小时前`;
+                }
+            }
+
+            // 否则显示完整时间
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // 初始加载
+        loadWorkflows();
+        setInterval(loadWorkflows, 5000);
+    </script>
+</body>
+
+</html>

@@ -7,6 +7,7 @@ pydantic-settings>=2.1.0
 # 数据库
 sqlalchemy>=2.0.25
 psycopg2-binary>=2.9.9
+asyncpg>=0.29.0  # PostgreSQL 异步驱动
 alembic>=1.13.1
 
 # 异步支持
@@ -32,6 +33,13 @@ loguru>=0.7.2
 
 # MCP 协议支持
 mcp[cli]>=1.2.0
+
+# 编排引擎
+langgraph>=0.2.0
+langchain-core>=0.3.0
+
+# WebSocket 支持
+websockets>=12.0
 
 # 测试
 pytest>=7.4.4

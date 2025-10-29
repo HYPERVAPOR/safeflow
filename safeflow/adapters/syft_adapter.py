@@ -70,7 +70,7 @@ class SyftAdapter(BaseAdapter):
     def get_capability(self) -> ToolCapability:
         """返回 Syft 工具能力声明"""
         return ToolCapability(
-            tool_id="syft-0.99.0",
+            tool_id="syft",
             tool_name="Syft",
             tool_version="0.99.0",
             tool_type=ToolType.SCA,

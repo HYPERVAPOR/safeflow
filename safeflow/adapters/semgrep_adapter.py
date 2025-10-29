@@ -48,11 +48,30 @@ class SemgrepAdapter(BaseAdapter):
         super().__init__()
         self._check_semgrep_installed()
     
+    def _get_semgrep_path(self) -> str:
+        """获取 Semgrep 可执行文件路径"""
+        import sys
+        from pathlib import Path
+        
+        # 尝试查找虚拟环境中的 semgrep
+        venv_semgrep = Path(sys.executable).parent / "semgrep"
+        if venv_semgrep.exists():
+            return str(venv_semgrep)
+        
+        # 尝试使用系统 PATH 中的 semgrep
+        import shutil
+        system_semgrep = shutil.which("semgrep")
+        if system_semgrep:
+            return system_semgrep
+        
+        raise ExecutionError("未找到 Semgrep 命令，请先安装: pip install semgrep")
+    
     def _check_semgrep_installed(self):
         """检查 Semgrep 是否已安装"""
         try:
+            semgrep_path = self._get_semgrep_path()
             result = subprocess.run(
-                ["semgrep", "--version"],
+                [semgrep_path, "--version"],
                 capture_output=True,
                 text=True,
                 timeout=5
@@ -60,15 +79,16 @@ class SemgrepAdapter(BaseAdapter):
             if result.returncode != 0:
                 raise ExecutionError("Semgrep 未正确安装")
             self.logger.info(f"Semgrep 版本: {result.stdout.strip()}")
-        except FileNotFoundError:
-            raise ExecutionError("未找到 Semgrep 命令，请先安装: pip install semgrep")
+            self.logger.info(f"Semgrep 路径: {semgrep_path}")
+        except ExecutionError:
+            raise
         except Exception as e:
             raise ExecutionError(f"检查 Semgrep 安装失败: {str(e)}")
     
     def get_capability(self) -> ToolCapability:
         """返回 Semgrep 工具能力声明"""
         return ToolCapability(
-            tool_id="semgrep-1.50.0",
+            tool_id="semgrep",
             tool_name="Semgrep",
             tool_version="1.50.0",
             tool_type=ToolType.SAST,
@@ -106,8 +126,8 @@ class SemgrepAdapter(BaseAdapter):
             ),
             
             execution=ExecutionConfig(
-                command_template="semgrep scan --json --config={rules} {target_path}",
-                timeout_seconds=600,
+                command_template="semgrep scan --json --no-git-ignore --config {rules} {target_path}",
+                timeout_seconds=1800,  # 增加到 30 分钟，适应大型项目
                 resource_requirements=ResourceRequirements(
                     min_memory_mb=512,
                     min_cpu_cores=1
@@ -144,20 +164,61 @@ class SemgrepAdapter(BaseAdapter):
         target_path = target.get("path")
         options = scan_request.get("options", {})
         
+        # 获取 Semgrep 可执行文件路径
+        semgrep_path = self._get_semgrep_path()
+        
         # 构建命令
         rules = options.get("rules", "auto")  # 默认使用 auto 规则集
         cmd = [
-            "semgrep",
+            semgrep_path,
             "scan",
             "--json",
-            f"--config={rules}",
-            target_path
+            "--no-git-ignore"  # 扫描所有文件，不受 Git 限制
         ]
+        
+        # 处理规则参数：支持逗号分隔的多个规则集
+        if isinstance(rules, str):
+            # 如果包含逗号，分割成多个规则
+            rule_list = [r.strip() for r in rules.split(",") if r.strip()]
+        elif isinstance(rules, list):
+            rule_list = rules
+        else:
+            rule_list = ["auto"]
+        
+        # 为每个规则添加 --config 参数
+        for rule in rule_list:
+            cmd.extend(["--config", rule])
+        
+        # 添加目标路径
+        cmd.append(target_path)
+        
+        # 添加性能优化参数
+        max_target_bytes = options.get("max_target_bytes", None)
+        if max_target_bytes:
+            cmd.extend(["--max-target-bytes", str(max_target_bytes)])
+        
+        # 添加并发任务数（加速扫描）
+        jobs = options.get("jobs", None)
+        if jobs:
+            cmd.extend(["--jobs", str(jobs)])
         
         # 添加排除路径
         exclude_paths = options.get("exclude_paths", [])
         for exclude in exclude_paths:
             cmd.extend(["--exclude", exclude])
+        
+        # 默认排除常见的大文件目录
+        default_excludes = [
+            "node_modules",
+            ".git",
+            "dist",
+            "build",
+            "*.min.js",
+            "*.bundle.js"
+        ]
+        for exclude in default_excludes:
+            if exclude not in exclude_paths:
+                cmd.extend(["--exclude", exclude])
         
         self.logger.info(f"执行命令: {' '.join(cmd)}")
         
@@ -242,6 +303,15 @@ class SemgrepAdapter(BaseAdapter):
         elif isinstance(cwe_text, list) and len(cwe_text) > 0:
             cwe_id = self._extract_cwe_id(cwe_text[0])
         
+        # 提取 OWASP 类别（可能是列表或字符串）
+        owasp_raw = metadata.get("owasp", None)
+        owasp_category = None
+        if owasp_raw:
+            if isinstance(owasp_raw, list) and len(owasp_raw) > 0:
+                owasp_category = owasp_raw[0]  # 取第一个
+            elif isinstance(owasp_raw, str):
+                owasp_category = owasp_raw
+        
         # 构建统一漏洞模型
         return UnifiedVulnerability(
             vulnerability_id=self._generate_vulnerability_id(scan_session_id, index),
@@ -250,7 +320,7 @@ class SemgrepAdapter(BaseAdapter):
             vulnerability_type=VulnerabilityType(
                 name=check_id.split(".")[-1].replace("-", " ").title(),
                 cwe_id=cwe_id,
-                owasp_category=metadata.get("owasp", None)
+                owasp_category=owasp_category
             ),
             
             location=Location(
@@ -292,8 +362,8 @@ class SemgrepAdapter(BaseAdapter):
             metadata=VulnerabilityMetadata(
                 detected_at=datetime.now(),
                 language=metadata.get("technology", [None])[0] if metadata.get("technology") else None,
-                tags=metadata.get("category", []) if metadata.get("category") else [],
-                references=metadata.get("references", []) if metadata.get("references") else []
+                tags=self._normalize_to_list(metadata.get("category", [])),
+                references=self._normalize_to_list(metadata.get("references", []))
             ),
             
             verification=Verification()
@@ -325,6 +395,17 @@ class SemgrepAdapter(BaseAdapter):
             "LOW": 70
         }
         return severity_confidence_map.get(severity.upper(), 75)
+    
+    def _normalize_to_list(self, value: Any) -> List[str]:
+        """将值标准化为列表"""
+        if value is None:
+            return []
+        elif isinstance(value, list):
+            return value
+        elif isinstance(value, str):
+            return [value]
+        else:
+            return []
 
 
 # 示例用法

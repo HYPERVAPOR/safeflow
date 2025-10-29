@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeFlow - 工作流详情</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .back-link {
+            color: #3498db;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.running {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.pending {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .info-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .vulnerability-card {
+            background: #fff5f5;
+            border-left: 4px solid #e74c3c;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .vulnerability-card.critical {
+            border-left-color: #c0392b;
+            background: #fff5f5;
+        }
+
+        .vulnerability-card.high {
+            border-left-color: #e74c3c;
+            background: #fff9f9;
+        }
+
+        .vulnerability-card.medium {
+            border-left-color: #f39c12;
+            background: #fffbf5;
+        }
+
+        .vulnerability-card.low {
+            border-left-color: #3498db;
+            background: #f5f9ff;
+        }
+
+        .vuln-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .vuln-location {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            font-family: monospace;
+        }
+
+        .vuln-description {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .vuln-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .severity-badge {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .severity-critical {
+            background: #c0392b;
+            color: white;
+        }
+
+        .severity-high {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .severity-medium {
+            background: #f39c12;
+            color: white;
+        }
+
+        .severity-low {
+            background: #3498db;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .node-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .node-item {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .node-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 8px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #3498db;
+        }
+
+        .node-item.success::before {
+            background: #27ae60;
+        }
+
+        .node-item.failed::before {
+            background: #e74c3c;
+        }
+
+        .node-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .node-duration {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .tab-container {
+            margin-top: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/web/" class="back-link">← 返回列表</a>
+        <h1>🔍 工作流详情</h1>
+
+        <div id="loading" class="loading">
+            加载中...
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="content" style="display: none;">
+            <!-- 基本信息 -->
+            <div class="card">
+                <h2>基本信息</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">工作流ID</div>
+                        <div class="info-value" id="workflowId">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">工作流类型</div>
+                        <div class="info-value" id="workflowType">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">状态</div>
+                        <div class="info-value">
+                            <span id="status" class="status">-</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">创建者</div>
+                        <div class="info-value" id="createdBy">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">创建时间</div>
+                        <div class="info-value" id="createdAt">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">执行时长</div>
+                        <div class="info-value" id="duration">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">目标路径</div>
+                        <div class="info-value" id="targetPath">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">使用工具</div>
+                        <div class="info-value" id="tools">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 统计信息 -->
+            <div class="card">
+                <h2>扫描结果统计</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">总漏洞数</div>
+                        <div class="info-value" id="totalVulns" style="color: #e74c3c; font-size: 24px;">0</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">严重</div>
+                        <div class="info-value" id="criticalCount" style="color: #c0392b;">0</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">高危</div>
+                        <div class="info-value" id="highCount" style="color: #e74c3c;">0</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">中危</div>
+                        <div class="info-value" id="mediumCount" style="color: #f39c12;">0</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">低危</div>
+                        <div class="info-value" id="lowCount" style="color: #3498db;">0</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">节点数</div>
+                        <div class="info-value" id="nodeCount">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 标签页 -->
+            <div class="card tab-container">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('vulnerabilities')">漏洞列表</button>
+                    <button class="tab" onclick="switchTab('nodes')">执行节点</button>
+                    <button class="tab" onclick="switchTab('raw')">原始数据</button>
+                </div>
+
+                <!-- 漏洞列表 -->
+                <div id="vulnerabilities-content" class="tab-content active">
+                    <div id="vulnList"></div>
+                </div>
+
+                <!-- 执行节点 -->
+                <div id="nodes-content" class="tab-content">
+                    <div class="node-timeline" id="nodeList"></div>
+                </div>
+
+                <!-- 原始数据 -->
+                <div id="raw-content" class="tab-content">
+                    <pre id="rawData"
+                        style="background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/orchestration';
+        let currentTab = 'vulnerabilities';
+
+        // 从URL获取工作流ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const workflowId = urlParams.get('id');
+
+        if (!workflowId) {
+            showError('未提供工作流ID');
+        } else {
+            loadWorkflowDetail();
+        }
+
+        async function loadWorkflowDetail() {
+            try {
+                const response = await fetch(`${API_BASE}/workflows/${workflowId}/detail`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                displayWorkflowDetail(data);
+            } catch (error) {
+                showError(`加载失败: ${error.message}`);
+            }
+        }
+
+        function displayWorkflowDetail(data) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+
+            // 基本信息
+            document.getElementById('workflowId').textContent = data.workflow_id;
+            document.getElementById('workflowType').textContent = data.workflow_type;
+            document.getElementById('status').textContent = data.status;
+            document.getElementById('status').className = `status ${data.status.toLowerCase()}`;
+            document.getElementById('createdBy').textContent = data.created_by || '-';
+            document.getElementById('createdAt').textContent = formatDateTime(data.created_at);
+            document.getElementById('duration').textContent = data.duration ? `${data.duration.toFixed(2)}秒` : '-';
+            document.getElementById('targetPath').textContent = data.target_path || '-';
+            document.getElementById('tools').textContent = data.tool_ids ? JSON.parse(data.tool_ids).join(', ') : '-';
+
+            // 统计信息
+            document.getElementById('totalVulns').textContent = data.total_vulnerabilities || 0;
+            document.getElementById('nodeCount').textContent = data.node_count || 0;
+
+            // 解析状态快照获取漏洞和节点信息
+            if (data.state_snapshot) {
+                const snapshot = JSON.parse(data.state_snapshot);
+
+                // 漏洞统计
+                const vulns = snapshot.vulnerabilities || [];
+                const severityCount = {};
+                vulns.forEach(v => {
+                    const severity = v.severity.level;
+                    severityCount[severity] = (severityCount[severity] || 0) + 1;
+                });
+
+                document.getElementById('criticalCount').textContent = severityCount['CRITICAL'] || 0;
+                document.getElementById('highCount').textContent = severityCount['HIGH'] || 0;
+                document.getElementById('mediumCount').textContent = severityCount['MEDIUM'] || 0;
+                document.getElementById('lowCount').textContent = severityCount['LOW'] || 0;
+
+                // 显示漏洞列表
+                displayVulnerabilities(vulns);
+
+                // 显示节点列表
+                displayNodes(snapshot.node_results || []);
+
+                // 显示原始数据
+                document.getElementById('rawData').textContent = JSON.stringify(snapshot, null, 2);
+            }
+        }
+
+        function displayVulnerabilities(vulns) {
+            const container = document.getElementById('vulnList');
+
+            if (vulns.length === 0) {
+                container.innerHTML = '<p style="color: #666;">未发现漏洞</p>';
+                return;
+            }
+
+            container.innerHTML = vulns.map((v, i) => `
+                <div class="vulnerability-card ${v.severity.level.toLowerCase()}">
+                    <div class="vuln-title">
+                        ${i + 1}. ${v.vulnerability_type.name}
+                        <span class="severity-badge severity-${v.severity.level.toLowerCase()}">
+                            ${v.severity.level}
+                        </span>
+                    </div>
+                    <div class="vuln-location">
+                        📁 ${v.location.file_path}:${v.location.line_start}
+                    </div>
+                    <div class="vuln-description">
+                        ${v.description.summary}
+                    </div>
+                    <div class="vuln-meta">
+                        <span>🏷️ CWE-${v.vulnerability_type.cwe_id}</span>
+                        <span>🔧 ${v.source_tool}</span>
+                        <span>📊 置信度: ${v.confidence.score}%</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayNodes(nodes) {
+            const container = document.getElementById('nodeList');
+
+            if (nodes.length === 0) {
+                container.innerHTML = '<p style="color: #666;">暂无节点信息</p>';
+                return;
+            }
+
+            container.innerHTML = nodes.map(node => `
+                <div class="node-item ${node.status.toLowerCase()}">
+                    <div class="node-name">
+                        ${node.node_name} (${node.node_type})
+                        <span class="status ${node.status.toLowerCase()}">${node.status}</span>
+                    </div>
+                    <div class="node-duration">
+                        ⏱️ 耗时: ${node.duration.toFixed(3)}秒
+                        ${node.tool_results && node.tool_results.length > 0 ?
+                    `| 🔧 工具: ${node.tool_results.map(t => t.tool_name).join(', ')}` : ''}
+                    </div>
+                    ${node.error ? `<div style="color: #e74c3c; font-size: 12px; margin-top: 5px;">❌ ${node.error}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function switchTab(tabName) {
+            // 更新标签激活状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 更新内容显示
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-content`).classList.add('active');
+
+            currentTab = tabName;
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').textContent = message;
+        }
+
+        function formatDateTime(dt) {
+            if (!dt) return '-';
+            const date = new Date(dt);
+            return date.toLocaleString('zh-CN');
+        }
+
+        // 自动刷新（如果工作流仍在运行）
+        setInterval(() => {
+            const statusEl = document.getElementById('status');
+            if (statusEl && statusEl.textContent === 'RUNNING') {
+                loadWorkflowDetail();
+            }
+        }, 5000);
+    </script>
+</body>
+
+</html>
