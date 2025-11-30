@@ -1,21 +1,21 @@
 @import "tailwindcss";
 
-/* JetBrains Mono Web Font */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
-
 @layer base {
   * {
     box-sizing: border-box;
   }
 
-  html, body {
+  html,
+  body {
     margin: 0;
     padding: 0;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', 'PingFang SC', 'Microsoft YaHei';
     font-size: 16px;
     line-height: 1.5;
-    color: #F1F5F9; /* safeflow-text-primary */
-    background-color: #0F172A; /* safeflow-bg-primary */
+    color: #F1F5F9;
+    /* safeflow-text-primary */
+    background-color: #0F172A;
+    /* safeflow-bg-primary */
   }
 }
 
@@ -26,14 +26,17 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #1E293B; /* safeflow-bg-secondary */
+  background: #1E293B;
+  /* safeflow-bg-secondary */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569; /* safeflow-border */
+  background: #475569;
+  /* safeflow-border */
   border-radius: 4px;
-  border: 1px solid #334155; /* safeflow-bg-card */
+  border: 1px solid #334155;
+  /* safeflow-bg-card */
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -42,30 +45,39 @@
 
 /* 选中文本样式 */
 ::selection {
-  background-color: #14B8A6; /* safeflow-accent */
-  color: #F1F5F9; /* safeflow-text-primary */
+  background-color: #14B8A6;
+  /* safeflow-accent */
+  color: #F1F5F9;
+  /* safeflow-text-primary */
 }
 
 ::-moz-selection {
-  background-color: #14B8A6; /* safeflow-accent */
-  color: #F1F5F9; /* safeflow-text-primary */
+  background-color: #14B8A6;
+  /* safeflow-accent */
+  color: #F1F5F9;
+  /* safeflow-text-primary */
 }
 
 @layer components {
+
   /* SafeFlow 按钮样式 - 按照设计文档规范 */
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.75rem 1rem; /* 12px 16px - 符合4px网格系统 */
-    font-size: 0.875rem; /* 14px */
+    padding: 0.75rem 1rem;
+    /* 12px 16px - 符合4px网格系统 */
+    font-size: 0.875rem;
+    /* 14px */
     font-weight: 500;
-    border-radius: 6px; /* 按钮圆角 */
+    border-radius: 6px;
+    /* 按钮圆角 */
     border: 1px solid transparent;
     transition: all 0.2s;
     cursor: pointer;
     text-decoration: none;
-    height: 40px; /* 标准按钮高度 */
+    height: 40px;
+    /* 标准按钮高度 */
   }
 
   .btn:disabled {
@@ -75,35 +87,46 @@
 
   /* 主要按钮 - SafeFlow 强调色 */
   .btn-primary {
-    background-color: #14B8A6; /* safeflow-accent */
-    color: #F1F5F9; /* safeflow-text-primary */
+    background-color: #14B8A6;
+    /* safeflow-accent */
+    color: #F1F5F9;
+    /* safeflow-text-primary */
   }
 
   .btn-primary:hover:not(:disabled) {
-    background-color: #0D9488; /* safeflow-accent-hover */
+    background-color: #0D9488;
+    /* safeflow-accent-hover */
   }
 
   /* 次要按钮 */
   .btn-secondary {
-    background-color: #334155; /* safeflow-bg-card */
-    color: #CBD5E1; /* safeflow-text-secondary */
-    border-color: #475569; /* safeflow-border */
+    background-color: #334155;
+    /* safeflow-bg-card */
+    color: #CBD5E1;
+    /* safeflow-text-secondary */
+    border-color: #475569;
+    /* safeflow-border */
   }
 
   .btn-secondary:hover:not(:disabled) {
-    background-color: #475569; /* safeflow-hover */
-    color: #F1F5F9; /* safeflow-text-primary */
+    background-color: #475569;
+    /* safeflow-hover */
+    color: #F1F5F9;
+    /* safeflow-text-primary */
   }
 
   /* 幽灵按钮 */
   .btn-ghost {
     background-color: transparent;
-    color: #CBD5E1; /* safeflow-text-secondary */
+    color: #CBD5E1;
+    /* safeflow-text-secondary */
   }
 
   .btn-ghost:hover:not(:disabled) {
-    background-color: #334155; /* safeflow-bg-card */
-    color: #F1F5F9; /* safeflow-text-primary */
+    background-color: #334155;
+    /* safeflow-bg-card */
+    color: #F1F5F9;
+    /* safeflow-text-primary */
   }
 
   /* 状态标签 */
@@ -112,50 +135,63 @@
     align-items: center;
     padding: 0.25rem 0.5rem;
     border-radius: 9999px;
-    font-size: 0.75rem; /* 12px */
+    font-size: 0.75rem;
+    /* 12px */
     font-weight: 500;
   }
 
   .status-badge-success {
     background-color: rgba(34, 197, 94, 0.2);
-    color: #22C55E; /* safeflow-success */
+    color: #22C55E;
+    /* safeflow-success */
   }
 
   .status-badge-error {
     background-color: rgba(239, 68, 68, 0.2);
-    color: #EF4444; /* safeflow-error */
+    color: #EF4444;
+    /* safeflow-error */
   }
 
   /* 输入框 - SafeFlow 规范 */
   .input {
     width: 100%;
-    padding: 0.75rem; /* 12px - 符合4px网格系统 */
-    background-color: #334155; /* safeflow-bg-card */
-    border: 1px solid #475569; /* safeflow-border */
-    border-radius: 6px; /* 输入框圆角 */
-    color: #F1F5F9; /* safeflow-text-primary */
+    padding: 0.75rem;
+    /* 12px - 符合4px网格系统 */
+    background-color: #334155;
+    /* safeflow-bg-card */
+    border: 1px solid #475569;
+    /* safeflow-border */
+    border-radius: 6px;
+    /* 输入框圆角 */
+    color: #F1F5F9;
+    /* safeflow-text-primary */
     transition: border-color 0.2s;
-    height: 40px; /* 标准输入框高度 */
+    height: 40px;
+    /* 标准输入框高度 */
   }
 
   .input:focus {
     outline: none;
-    border-color: #14B8A6; /* safeflow-accent - 清晰的边框高亮 */
+    border-color: #14B8A6;
+    /* safeflow-accent - 清晰的边框高亮 */
   }
 
   /* 加载动画 - 使用 SafeFlow 强调色 */
   .loading-spinner {
     width: 1.25rem;
     height: 1.25rem;
-    border: 2px solid #475569; /* safeflow-border */
-    border-top-color: #14B8A6; /* safeflow-accent */
+    border: 2px solid #475569;
+    /* safeflow-border */
+    border-top-color: #14B8A6;
+    /* safeflow-accent */
     border-radius: 50%;
     animation: loading 1s linear infinite;
   }
 
   .loading-bar {
     height: 0.375rem;
-    background-color: #334155; /* safeflow-bg-card */
+    background-color: #334155;
+    /* safeflow-bg-card */
     border-radius: 0.125rem;
     overflow: hidden;
   }
@@ -165,19 +201,25 @@
     display: block;
     height: 100%;
     width: 50%;
-    background-color: #14B8A6; /* safeflow-accent */
+    background-color: #14B8A6;
+    /* safeflow-accent */
     animation: loading 1.2s linear infinite;
   }
 
   /* SafeFlow 渐变文字 - 优雅灰色设计 */
   .text-gradient {
     background: linear-gradient(135deg,
-      #f8fafc 0%,    /* 极浅灰白色 */
-      #f1f5f9 25%,   /* 浅灰色 */
-      #e2e8f0 50%,   /* 中浅灰色 */
-      #cbd5e1 75%,   /* 中灰色 */
-      #94a3b8 100%   /* 深灰色 */
-    );
+        #f8fafc 0%,
+        /* 极浅灰白色 */
+        #f1f5f9 25%,
+        /* 浅灰色 */
+        #e2e8f0 50%,
+        /* 中浅灰色 */
+        #cbd5e1 75%,
+        /* 中灰色 */
+        #94a3b8 100%
+        /* 深灰色 */
+      );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -186,22 +228,24 @@
 
   /* 玻璃面板 - 参考MCP Inspector设计 */
   .glass-panel {
-    background-color: rgba(17, 24, 39, 0.6); /* 更深色的玻璃背景 */
-    border: 1px solid rgba(55, 65, 81, 0.5); /* 更柔和的边框 */
-    border-radius: 12px; /* 更圆润的边角 */
-    padding: 1.25rem; /* 20px */
+    background-color: rgba(17, 24, 39, 0.6);
+    /* 更深色的玻璃背景 */
+    border: 1px solid rgba(55, 65, 81, 0.5);
+    /* 更柔和的边框 */
+    border-radius: 12px;
+    /* 更圆润的边角 */
+    padding: 1.25rem;
+    /* 20px */
     backdrop-filter: blur(8px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
   /* 骨架屏加载效果 */
   .skeleton {
-    background: linear-gradient(
-      90deg,
-      rgba(55, 65, 81, 0.3) 25%,
-      rgba(55, 65, 81, 0.5) 50%,
-      rgba(55, 65, 81, 0.3) 75%
-    );
+    background: linear-gradient(90deg,
+        rgba(55, 65, 81, 0.3) 25%,
+        rgba(55, 65, 81, 0.5) 50%,
+        rgba(55, 65, 81, 0.3) 75%);
     background-size: 200% 100%;
     animation: skeleton 1.5s ease-in-out infinite;
   }
@@ -210,6 +254,7 @@
     0% {
       background-position: 200% 0;
     }
+
     100% {
       background-position: -200% 0;
     }
@@ -259,31 +304,41 @@
     display: inline-flex;
     align-items: center;
     padding: 0.5rem 1rem;
-    font-size: 0.875rem; /* 14px */
+    font-size: 0.875rem;
+    /* 14px */
     font-weight: 500;
-    border-radius: 6px; /* 按钮圆角 */
+    border-radius: 6px;
+    /* 按钮圆角 */
     border: 1px solid transparent;
     transition: all 0.15s ease-in-out;
     user-select: none;
   }
 
   .nav-item-active {
-    background-color: rgba(20, 184, 166, 0.2); /* safeflow-accent with alpha */
-    color: #14B8A6; /* safeflow-accent */
+    background-color: rgba(20, 184, 166, 0.2);
+    /* safeflow-accent with alpha */
+    color: #14B8A6;
+    /* safeflow-accent */
     border-color: rgba(20, 184, 166, 0.5);
     box-shadow: 0 0 5px rgba(20, 184, 166, 0.2);
   }
 
   .nav-item-inactive {
-    background-color: #1E293B; /* safeflow-bg-secondary */
-    color: #94A3B8; /* safeflow-text-tertiary */
-    border-color: #475569; /* safeflow-border */
+    background-color: #1E293B;
+    /* safeflow-bg-secondary */
+    color: #94A3B8;
+    /* safeflow-text-tertiary */
+    border-color: #475569;
+    /* safeflow-border */
   }
 
   .nav-item-inactive:hover {
-    background-color: #334155; /* safeflow-bg-card */
-    color: #F1F5F9; /* safeflow-text-primary */
-    border-color: #14B8A6; /* safeflow-accent */
+    background-color: #334155;
+    /* safeflow-bg-card */
+    color: #F1F5F9;
+    /* safeflow-text-primary */
+    border-color: #14B8A6;
+    /* safeflow-accent */
   }
 
   .nav-item:active {
@@ -307,10 +362,12 @@
       opacity: 0;
       transform: translateY(30px) scale(0.9);
     }
+
     60% {
       opacity: 0.8;
       transform: translateY(-5px) scale(1.02);
     }
+
     100% {
       opacity: 1;
       transform: translateY(0) scale(1);

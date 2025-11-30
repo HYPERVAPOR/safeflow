@@ -259,9 +259,11 @@ export default function MCPInspectorPage() {
       setError(null);
       addLog('正在连接 MCP 服务器...');
 
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
       const [statusResponse, toolsResponse] = await Promise.all([
-        fetch('http://localhost:8000/api/v1/mcp/status'),
-        fetch('http://localhost:8000/api/v1/mcp/tools?available_only=false')
+        fetch(`${apiBaseUrl}/api/v1/mcp/status`),
+        fetch(`${apiBaseUrl}/api/v1/mcp/tools?available_only=false`)
       ]);
 
       if (!statusResponse.ok || !toolsResponse.ok) {
@@ -397,7 +399,9 @@ export default function MCPInspectorPage() {
         arguments: parsedArguments
       };
 
-      const response = await fetch(`http://localhost:8000/api/v1/mcp/tools/${selectedTool.name}/execute`, {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+      const response = await fetch(`${apiBaseUrl}/api/v1/mcp/tools/${selectedTool.name}/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody)

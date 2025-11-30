@@ -85,7 +85,7 @@ export default function Navigation() {
           {/* API 文档链接 */}
           <div className="hidden md:flex items-center space-x-4">
             <a
-              href="http://localhost:8000/api/docs"
+              href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/docs`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-secondary text-sm"
@@ -136,7 +136,7 @@ export default function Navigation() {
 
             <div className="px-3 py-2">
               <a
-                href="http://localhost:8000/api/docs"
+                href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/docs`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-secondary text-sm w-full text-center"
