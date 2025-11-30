@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import * as Icons from '@/components/icons';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
@@ -66,8 +67,8 @@ interface LogEntry {
 }
 
 const DETAIL_TABS = [
-  { id: 'overview', label: '概览', icon: '📋' },
-  { id: 'parameters', label: '参数', icon: '⚙️' }
+  { id: 'overview', label: '概览', icon: 'overview' },
+  { id: 'parameters', label: '参数', icon: 'parameters' }
 ] as const;
 
 type DetailTab = (typeof DETAIL_TABS)[number]['id'];
@@ -78,15 +79,15 @@ type ColumnWidths = {
   right: number;
 };
 
-const TOOL_ICONS: Record<string, string> = {
-  static_analysis: '🧠',
-  dependency_analysis: '🧩',
-  web_security: '🌐',
-  dynamic_analysis: '⚡',
-  fuzzing: '🧪',
-  observability: '📈',
-  orchestration: '🛰️',
-  unknown: '🔧'
+const TOOL_ICONS: Record<string, React.FC<{ size?: number | string; className?: string }>> = {
+  static_analysis: Icons.StaticAnalysisIcon,
+  dependency_analysis: Icons.DependencyAnalysisIcon,
+  web_security: Icons.WebSecurityIcon,
+  dynamic_analysis: Icons.DynamicAnalysisIcon,
+  fuzzing: Icons.FuzzingIcon,
+  observability: Icons.ObservabilityIcon,
+  orchestration: Icons.OrchestrationIcon,
+  unknown: Icons.UnknownToolIcon
 };
 
 const COLUMN_MIN_WIDTH: ColumnWidths = {
@@ -194,6 +195,37 @@ const buildExampleArguments = (tool: MCPTool) => {
 };
 
 const getToolIcon = (category: string) => TOOL_ICONS[category] || TOOL_ICONS.unknown;
+
+const renderToolIcon = (category: string, size: number | string = 20, className: string = '') => {
+  const IconComponent = getToolIcon(category);
+  return <IconComponent size={size} className={className} />;
+};
+
+const renderIcon = (iconType: string, size: number | string = 16, className: string = '') => {
+  switch (iconType) {
+    case 'overview':
+      return <Icons.OverviewIcon size={size} className={className} />;
+    case 'parameters':
+      return <Icons.ParametersIcon size={size} className={className} />;
+    default:
+      return null;
+  }
+};
+
+const renderStatusIcon = (iconType: string, size: number | string = 16, className: string = '') => {
+  switch (iconType) {
+    case 'StatusSuccessIcon':
+      return <Icons.StatusSuccessIcon size={size} className={className} />;
+    case 'StatusErrorIcon':
+      return <Icons.StatusErrorIcon size={size} className={className} />;
+    case 'StatusWarningIcon':
+      return <Icons.StatusWarningIcon size={size} className={className} />;
+    case 'StatusRunningIcon':
+      return <Icons.StatusRunningIcon size={size} className={className} />;
+    default:
+      return null;
+  }
+};
 
 const calculateSchemaEditorHeight = (schema: any) => {
   const lines = JSON.stringify(schema, null, 2).split('\n').length;
@@ -510,10 +542,10 @@ export default function MCPInspectorPage() {
   const ringOffset = ringCircumference * (1 - availabilityRatio);
 
   const statusMeta = useMemo(() => {
-    if (!serverStatus) return { label: '未连接', tone: 'warning', icon: '🟡' };
-    if (!serverStatus.initialized) return { label: '异常', tone: 'error', icon: '🔴' };
-    if (availabilityRatio < 0.5) return { label: '警告', tone: 'warning', icon: '🟡' };
-    return { label: '运行中', tone: 'success', icon: '🟢' };
+    if (!serverStatus) return { label: '未连接', tone: 'warning', icon: 'StatusWarningIcon' };
+    if (!serverStatus.initialized) return { label: '异常', tone: 'error', icon: 'StatusErrorIcon' };
+    if (availabilityRatio < 0.5) return { label: '警告', tone: 'warning', icon: 'StatusWarningIcon' };
+    return { label: '运行中', tone: 'success', icon: 'StatusSuccessIcon' };
   }, [serverStatus, availabilityRatio]);
 
   return (
@@ -521,8 +553,9 @@ export default function MCPInspectorPage() {
       <header className="flex-shrink-0 border-b border-gray-700 bg-gray-900/95 backdrop-blur-sm">
         <div className="flex items-center justify-between px-8 py-4">
           <div className="flex items-center space-x-4">
-            <Link href="/" className="text-gray-400 hover:text-gray-100 transition-colors text-sm">
-              ← 返回首页
+            <Link href="/" className="flex items-center space-x-1 text-gray-400 hover:text-gray-100 transition-colors text-sm">
+              <Icons.ChevronLeftIcon size={16} />
+              <span>返回首页</span>
             </Link>
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-gray-500">MCP Inspector</p>
@@ -548,7 +581,7 @@ export default function MCPInspectorPage() {
               </span>
             </div>
             <button onClick={loadServerStatus} disabled={loading} className="btn btn-secondary">
-              {loading ? <div className="loading-spinner" /> : '刷新'}
+              {loading ? <Icons.LoadingSpinner size={16} /> : <Icons.RefreshIcon size={16} />}
             </button>
           </div>
         </div>
@@ -580,19 +613,25 @@ export default function MCPInspectorPage() {
                   onClick={() => setSidebarCollapsed((prev) => !prev)}
                   className="rounded-full border border-gray-700 text-gray-400 hover:text-gray-100 hover:border-night-500 transition-colors p-2"
                 >
-                  {sidebarCollapsed ? '›' : '‹'}
+                  {sidebarCollapsed ? <Icons.ChevronRightIcon size={12} /> : <Icons.ChevronLeftIcon size={12} />}
                 </button>
               </div>
 
               {!sidebarCollapsed && (
                 <div className="px-4 py-3 border-b border-gray-700 bg-night-750/20">
-                  <input
-                    type="text"
-                    placeholder="搜索工具..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input text-sm"
-                  />
+                  <div className="relative">
+                    <Icons.SearchIcon
+                      size={14}
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="搜索工具..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="input text-sm pl-10"
+                    />
+                  </div>
                 </div>
               )}
 
@@ -616,12 +655,14 @@ export default function MCPInspectorPage() {
                       >
                         <span className="flex items-center space-x-2">
                           <span className="w-7 h-7 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center">
-                            {getToolIcon(category)}
+                            {renderToolIcon(category, 16)}
                           </span>
                           {!sidebarCollapsed && <span>{formatCategory(category)}</span>}
                         </span>
                         {!sidebarCollapsed && (
-                          <span className="text-gray-600">{expandedGroups[category] ? '–' : '+'}</span>
+                          <span className="text-gray-600">
+                            {expandedGroups[category] ? <Icons.ChevronDownIcon size={12} /> : <Icons.ChevronRightIcon size={12} />}
+                          </span>
                         )}
                       </button>
                       {expandedGroups[category] && (
@@ -638,11 +679,12 @@ export default function MCPInspectorPage() {
                             >
                               <div className="flex items-center justify-between">
                                 <div className="font-medium text-gray-100 truncate">{tool.name}</div>
-                                <span
-                                  className={`w-2 h-2 rounded-full breathing-dot ${
-                                    tool.available ? 'bg-green-500' : 'bg-red-500'
-                                  }`}
-                                ></span>
+                                <span className={tool.available ? 'text-green-500' : 'text-red-500'}>
+                                  {renderStatusIcon(
+                                    tool.available ? 'StatusSuccessIcon' : 'StatusErrorIcon',
+                                    10
+                                  )}
+                                </span>
                               </div>
                               {!sidebarCollapsed && (
                                 <>
@@ -710,7 +752,7 @@ export default function MCPInspectorPage() {
                       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                         <div className="space-y-3">
                           <div className="flex items-center space-x-3">
-                            <div className="tool-icon text-2xl">{getToolIcon(selectedTool.category)}</div>
+                            <div className="tool-icon text-2xl">{renderToolIcon(selectedTool.category, 28)}</div>
                             <div>
                               <h2 className="text-2xl font-semibold text-gray-100">{selectedTool.name}</h2>
                               <p className="text-gray-500 text-sm">{selectedTool.capability.author || '未知作者'}</p>
@@ -732,13 +774,15 @@ export default function MCPInspectorPage() {
                         </div>
                         <div className="flex items-center space-x-3">
                           {selectedTool.capability.documentation && (
-                            <Link href={selectedTool.capability.documentation} target="_blank" className="btn btn-ghost text-sm">
-                              文档
+                            <Link href={selectedTool.capability.documentation} target="_blank" className="btn btn-ghost text-sm flex items-center space-x-1">
+                              <Icons.DocumentationIcon size={14} />
+                              <span>文档</span>
                             </Link>
                           )}
                           {selectedTool.capability.homepage && (
-                            <Link href={selectedTool.capability.homepage} target="_blank" className="btn btn-ghost text-sm">
-                              官网
+                            <Link href={selectedTool.capability.homepage} target="_blank" className="btn btn-ghost text-sm flex items-center space-x-1">
+                              <Icons.ExternalLinkIcon size={14} />
+                              <span>官网</span>
                             </Link>
                           )}
                         </div>
@@ -753,7 +797,7 @@ export default function MCPInspectorPage() {
                               detailTab === tab.id ? 'nav-item-active' : 'nav-item-inactive'
                             }`}
                           >
-                            <span className="mr-2">{tab.icon}</span>
+                            <span className="mr-2">{renderIcon(tab.icon, 14)}</span>
                             {tab.label}
                           </button>
                         ))}
@@ -839,10 +883,11 @@ export default function MCPInspectorPage() {
                               <h4 className="text-sm font-medium text-gray-200">输入 Schema</h4>
                               <button
                                 onClick={() => handleCopy('schema')}
-                                className="text-xs text-gray-accent hover:text-white transition-colors"
+                                className="text-xs text-gray-accent hover:text-white transition-colors flex items-center space-x-1"
                                 disabled={!schemaInput.trim()}
                               >
-                                {copyState === 'schema' ? '已复制' : '复制'}
+                                <Icons.CopyIcon size={12} />
+                                <span>{copyState === 'schema' ? '已复制' : '复制'}</span>
                               </button>
                             </div>
                             <div className="rounded-2xl border border-gray-700/50 bg-[#000000]/95 overflow-hidden">
@@ -921,7 +966,9 @@ export default function MCPInspectorPage() {
                   </section>
                 ) : (
                   <div className="glass-panel p-12 text-center">
-                    <div className="text-4xl mb-4">🧭</div>
+                    <div className="text-4xl mb-4 text-gray-400">
+                      <Icons.CompassIcon size={32} />
+                    </div>
                     <h2 className="text-xl font-semibold mb-2">请选择一个工具</h2>
                     <p className="text-gray-500">从左侧列表中选择工具以查看详情并进行调用测试。</p>
                   </div>
@@ -955,11 +1002,14 @@ export default function MCPInspectorPage() {
                 >
                   {isExecuting ? (
                     <>
-                      <div className="loading-spinner mr-2" />
+                      <Icons.LoadingSpinner size={14} className="mr-2" />
                       执行中...
                     </>
                   ) : (
-                    'Execute'
+                    <>
+                      <Icons.ExecuteIcon size={14} className="mr-2" />
+                      Execute
+                    </>
                   )}
                 </button>
               </div>
@@ -1050,10 +1100,11 @@ export default function MCPInspectorPage() {
                       </div>
                       <button
                         onClick={() => handleCopy('request')}
-                        className="text-xs text-gray-accent hover:text-white transition-colors"
+                        className="text-xs text-gray-accent hover:text-white transition-colors flex items-center space-x-1"
                         disabled={!jsonInput.trim()}
                       >
-                        {copyState === 'request' ? '已复制' : '复制'}
+                        <Icons.CopyIcon size={12} />
+                        <span>{copyState === 'request' ? '已复制' : '复制'}</span>
                       </button>
                     </div>
                     <div className="rounded-2xl border border-gray-700/50 bg-[#000000]/95 overflow-hidden">
@@ -1096,10 +1147,11 @@ export default function MCPInspectorPage() {
                         {responseTime !== null && <span>{responseTime}ms</span>}
                         <button
                           onClick={() => handleCopy('response')}
-                          className="text-gray-accent hover:text-white transition-colors"
+                          className="text-gray-accent hover:text-white transition-colors flex items-center space-x-1"
                           disabled={!executionResult}
                         >
-                          {copyState === 'response' ? '已复制' : '复制'}
+                          <Icons.CopyIcon size={12} />
+                          <span>{copyState === 'response' ? '已复制' : '复制'}</span>
                         </button>
                       </div>
                     </div>
@@ -1113,13 +1165,21 @@ export default function MCPInspectorPage() {
                       ) : executionResult ? (
                         <>
                           <div className="flex items-center justify-between text-xs mb-3">
-                            <span
-                              className={`status-badge ${
-                                executionResult.success ? 'status-badge-success' : 'status-badge-error'
-                              }`}
-                            >
-                              {executionResult.success ? 'Success' : 'Error'}
-                            </span>
+                            <div className="flex items-center space-x-2">
+                              <span className={executionResult.success ? 'text-green-500' : 'text-red-500'}>
+                                {renderStatusIcon(
+                                  executionResult.success ? 'StatusSuccessIcon' : 'StatusErrorIcon',
+                                  12
+                                )}
+                              </span>
+                              <span
+                                className={`status-badge ${
+                                  executionResult.success ? 'status-badge-success' : 'status-badge-error'
+                                }`}
+                              >
+                                {executionResult.success ? 'Success' : 'Error'}
+                              </span>
+                            </div>
                             <span className="text-gray-500">耗时 {executionResult.execution_time.toFixed(2)}s</span>
                           </div>
                           {executionResult.error && (
@@ -1147,9 +1207,13 @@ export default function MCPInspectorPage() {
         {/* Console footer */}
         <div className="border-t border-gray-700 bg-gray-900 h-56 flex-shrink-0">
           <div className="flex items-center justify-between px-6 py-3">
-            <h4 className="text-sm font-medium text-gray-200">Console Logs</h4>
-            <button onClick={() => setLogs([])} className="text-xs text-gray-500 hover:text-gray-200 transition-colors">
-              清空
+            <div className="flex items-center space-x-2">
+              <Icons.ConsoleIcon size={16} />
+              <h4 className="text-sm font-medium text-gray-200">Console Logs</h4>
+            </div>
+            <button onClick={() => setLogs([])} className="text-xs text-gray-500 hover:text-gray-200 transition-colors flex items-center space-x-1">
+              <Icons.CloseIcon size={12} />
+              <span>清空</span>
             </button>
           </div>
           <div className="h-[calc(100%-48px)] overflow-y-auto space-y-2 text-xs font-mono px-6 pb-4">

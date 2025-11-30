@@ -148,12 +148,6 @@ class SemgrepMCPTool(MCPToolBase):
                 "Semgrep 是一个快速的静态分析工具，用于在代码中发现漏洞和安全问题。"
                 "支持多种编程语言，具有可定制的规则集，能够检测常见的安全漏洞模式、"
                 "代码质量问题和不安全编码实践。集成了 OWASP Top Ten、CWE Top 25 等标准规则集。"
-                "\n\n使用说明："
-                "\n• 必须参数：target_path（要扫描的文件或目录）"
-                "\n• 常用配置：'auto'（自动）、'p/owasp-top-ten'（OWASP安全检查）"
-                "\n• 语言过滤：使用 include 参数，例如 ['*.py'] 扫描 Python 文件"
-                "\n• 正确示例：target_path='.', include=['*.py'], exclude=['**/test_*.py']"
-                "\n• 推荐用于：代码安全审计、CI/CD集成、开发阶段安全检查"
             ),
             version="1.144.0",
             author="Return To Corporation",
