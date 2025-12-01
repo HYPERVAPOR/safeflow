@@ -5,7 +5,10 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
-export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 20, className = '' }) => (
+export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
+  size = 20,
+  className = '',
+}) => (
   <svg
     width={size}
     height={size}

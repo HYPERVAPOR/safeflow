@@ -6,17 +6,11 @@ export const metadata: Metadata = {
   description: '基于 LLM Agent 的智能测试平台接入系统',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN">
       <body className="font-sans antialiased">
-        <div className="min-h-screen bg-safeflow-bg-primary">
-          {children}
-        </div>
+        <div className="min-h-screen bg-safeflow-bg-primary">{children}</div>
       </body>
     </html>
   );

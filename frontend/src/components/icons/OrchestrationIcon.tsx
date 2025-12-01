@@ -1,7 +1,9 @@
 import React from 'react';
 import { IconBase } from './IconBase';
 
-export const OrchestrationIcon: React.FC<Omit<React.ComponentProps<typeof IconBase>, 'children'>> = (props) => (
+export const OrchestrationIcon: React.FC<
+  Omit<React.ComponentProps<typeof IconBase>, 'children'>
+> = (props) => (
   <IconBase {...props}>
     <circle cx="12" cy="5" r="2" />
     <circle cx="5" cy="19" r="2" />

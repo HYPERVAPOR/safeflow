@@ -1,19 +1,33 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @layer base {
   * {
     box-sizing: border-box;
   }
 
-  html, body {
+  html,
+  body {
     margin: 0;
     padding: 0;
-    font-family: '"Plus Jakarta Sans"', "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", "WenQuanYi Micro Hei", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", "Arial", sans-serif;
+    font-family:
+      '"Plus Jakarta Sans"',
+      'PingFang SC',
+      'Hiragino Sans GB',
+      'Microsoft YaHei',
+      '微软雅黑',
+      'WenQuanYi Micro Hei',
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      'Roboto',
+      'Helvetica Neue',
+      'Arial',
+      sans-serif;
     font-size: 16px;
     line-height: 1.5;
-    color: #D1D5DB;
+    color: #d1d5db;
     /* dev-text-primary - more gray */
-    background-color: #1A1A1A;
+    background-color: #1a1a1a;
     /* dev-bg-primary */
   }
 }
@@ -34,13 +48,13 @@
   background: #374151;
   /* dev-border */
   border-radius: 4px;
-  border: 1px solid #2A2A2A;
+  border: 1px solid #2a2a2a;
   /* dev-bg-secondary */
   transition: background-color 0.15s ease-in-out;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6B7280;
+  background: #6b7280;
   /* dev-border-hover */
 }
 
@@ -63,43 +77,48 @@
 .monaco-editor textarea,
 .monaco-editor .monaco-mouse-cursor-text,
 .monaco-editor .cursor,
-[id*="monaco-editor"] *,
-[id*="monaco"] *,
-div[class*="monaco-editor"] * {
-  font-family: 'Consolas', 'Monaco', 'Courier New', 'Lucida Console', monospace !important;
+[id*='monaco-editor'] *,
+[id*='monaco'] *,
+div[class*='monaco-editor'] * {
+  font-family:
+    'Consolas', 'Monaco', 'Courier New', 'Lucida Console', monospace !important;
   font-feature-settings: normal !important;
   font-variant-ligatures: normal !important;
 }
 
 /* Global monospace enforcement for code editors */
-[class*="editor"],
-[class*="monaco"],
-textarea[role="textbox"] {
-  font-family: 'Consolas', 'Monaco', 'Courier New', 'Lucida Console', monospace !important;
+[class*='editor'],
+[class*='monaco'],
+textarea[role='textbox'] {
+  font-family:
+    'Consolas', 'Monaco', 'Courier New', 'Lucida Console', monospace !important;
 }
 
 /* Fallback: Force system monospace */
-code, pre, .font-mono {
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace !important;
+code,
+pre,
+.font-mono {
+  font-family:
+    ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo,
+    monospace !important;
 }
 
 /* Professional Text Selection */
 ::selection {
   background-color: rgba(107, 114, 128, 0.3);
   /* dev-accent with alpha */
-  color: #D1D5DB;
+  color: #d1d5db;
   /* dev-text-primary - more gray */
 }
 
 ::-moz-selection {
   background-color: rgba(107, 114, 128, 0.3);
   /* dev-accent with alpha */
-  color: #D1D5DB;
+  color: #d1d5db;
   /* dev-text-primary - more gray */
 }
 
 @layer components {
-
   /* Professional Developer Button Styles */
   .btn {
     display: inline-flex;
@@ -118,7 +137,9 @@ code, pre, .font-mono {
     text-decoration: none;
     height: 40px;
     /* Standard button height */
-    font-family: '"Plus Jakarta Sans"', "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", "WenQuanYi Micro Hei", sans-serif;
+    font-family:
+      '"Plus Jakarta Sans"', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+      '微软雅黑', 'WenQuanYi Micro Hei', sans-serif;
   }
 
   .btn:disabled {
@@ -128,17 +149,17 @@ code, pre, .font-mono {
 
   /* Primary Button - Subtle Blue/Gray */
   .btn-primary {
-    background-color: #6B7280;
+    background-color: #6b7280;
     /* dev-accent */
-    color: #D1D5DB;
+    color: #d1d5db;
     /* dev-text-primary - more gray */
-    border-color: #6B7280;
+    border-color: #6b7280;
   }
 
   .btn-primary:hover:not(:disabled) {
-    background-color: #9CA3AF;
+    background-color: #9ca3af;
     /* dev-accent-hover */
-    border-color: #9CA3AF;
+    border-color: #9ca3af;
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
@@ -152,7 +173,7 @@ code, pre, .font-mono {
   .btn-execute {
     background-color: #059669;
     /* Deep green - emerald-700 */
-    color: #D1D5DB;
+    color: #d1d5db;
     /* dev-text-primary */
     border-color: #059669;
     font-weight: 600;
@@ -164,8 +185,9 @@ code, pre, .font-mono {
     /* emerald-800 - darker green */
     border-color: #047857;
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2),
-                0 0 8px rgba(5, 150, 105, 0.1);
+    box-shadow:
+      0 2px 4px rgba(5, 150, 105, 0.2),
+      0 0 8px rgba(5, 150, 105, 0.1);
   }
 
   .btn-execute:active:not(:disabled) {
@@ -177,7 +199,7 @@ code, pre, .font-mono {
     background-color: #374151;
     /* dev-border-secondary - muted green */
     border-color: #374151;
-    color: #6B7280;
+    color: #6b7280;
     /* dev-text-muted */
     cursor: not-allowed;
     transform: none;
@@ -186,9 +208,9 @@ code, pre, .font-mono {
 
   /* Secondary Button */
   .btn-secondary {
-    background-color: #2D2D2D;
+    background-color: #2d2d2d;
     /* dev-border - very dark gray */
-    color: #9CA3AF;
+    color: #9ca3af;
     /* dev-text-secondary */
     border-color: #374151;
     /* dev-border-secondary */
@@ -197,24 +219,24 @@ code, pre, .font-mono {
   .btn-secondary:hover:not(:disabled) {
     background-color: #374151;
     /* dev-border-secondary */
-    color: #D1D5DB;
+    color: #d1d5db;
     /* dev-text-primary */
-    border-color: #4B5563;
+    border-color: #4b5563;
     /* dev-border-tertiary */
   }
 
   /* Ghost Button */
   .btn-ghost {
     background-color: transparent;
-    color: #6B7280;
+    color: #6b7280;
     /* dev-text-muted */
     border-color: transparent;
   }
 
   .btn-ghost:hover:not(:disabled) {
-    background-color: #2D2D2D;
+    background-color: #2d2d2d;
     /* dev-border - very dark gray */
-    color: #9CA3AF;
+    color: #9ca3af;
     /* dev-text-secondary */
   }
 
@@ -227,7 +249,9 @@ code, pre, .font-mono {
     font-size: 0.75rem;
     /* 12px */
     font-weight: 600;
-    font-family: '"Plus Jakarta Sans"', "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", "WenQuanYi Micro Hei", sans-serif;
+    font-family:
+      '"Plus Jakarta Sans"', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+      '微软雅黑', 'WenQuanYi Micro Hei', sans-serif;
     letter-spacing: 0.025em;
     text-transform: uppercase;
   }
@@ -235,7 +259,7 @@ code, pre, .font-mono {
   .status-badge-success {
     background-color: rgba(52, 211, 153, 0.15);
     /* dev-success-subtle */
-    color: #34D399;
+    color: #34d399;
     /* dev-success */
     border: 1px solid rgba(52, 211, 153, 0.3);
   }
@@ -243,7 +267,7 @@ code, pre, .font-mono {
   .status-badge-error {
     background-color: rgba(248, 113, 113, 0.15);
     /* dev-error-subtle */
-    color: #F87171;
+    color: #f87171;
     /* dev-error */
     border: 1px solid rgba(248, 113, 113, 0.3);
   }
@@ -251,7 +275,7 @@ code, pre, .font-mono {
   .status-badge-warning {
     background-color: rgba(251, 191, 36, 0.15);
     /* dev-warning-subtle */
-    color: #FBBF24;
+    color: #fbbf24;
     /* dev-warning */
     border: 1px solid rgba(251, 191, 36, 0.3);
   }
@@ -259,7 +283,7 @@ code, pre, .font-mono {
   .status-badge-info {
     background-color: rgba(96, 165, 250, 0.15);
     /* dev-info-subtle */
-    color: #60A5FA;
+    color: #60a5fa;
     /* dev-info */
     border: 1px solid rgba(96, 165, 250, 0.3);
   }
@@ -269,24 +293,26 @@ code, pre, .font-mono {
     width: 100%;
     padding: 0.75rem;
     /* 12px - 4px grid system */
-    background-color: #2D2D2D;
+    background-color: #2d2d2d;
     /* dev-border - very dark gray */
     border: 1px solid #374151;
     /* dev-border-secondary */
     border-radius: 6px;
     /* Modern radius */
-    color: #D1D5DB;
+    color: #d1d5db;
     /* dev-text-primary - more gray */
     transition: all 0.15s ease-in-out;
     height: 40px;
     /* Standard input height */
-    font-family: '"Plus Jakarta Sans"', "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", "WenQuanYi Micro Hei", sans-serif;
+    font-family:
+      '"Plus Jakarta Sans"', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+      '微软雅黑', 'WenQuanYi Micro Hei', sans-serif;
     font-size: 0.875rem;
   }
 
   .input:focus {
     outline: none;
-    border-color: #4B5563;
+    border-color: #4b5563;
     /* dev-border-tertiary */
     background-color: #374151;
     /* dev-border-secondary */
@@ -294,7 +320,7 @@ code, pre, .font-mono {
   }
 
   .input::placeholder {
-    color: #6B7280;
+    color: #6b7280;
     /* dev-text-muted */
   }
 
@@ -304,7 +330,7 @@ code, pre, .font-mono {
     height: 1.25rem;
     border: 2px solid #374151;
     /* dev-border-secondary */
-    border-top-color: #6B7280;
+    border-top-color: #6b7280;
     /* dev-accent */
     border-radius: 50%;
     animation: loading 1s linear infinite;
@@ -312,7 +338,7 @@ code, pre, .font-mono {
 
   .loading-bar {
     height: 0.375rem;
-    background-color: #2D2D2D;
+    background-color: #2d2d2d;
     /* dev-border - very dark gray */
     border-radius: 0.125rem;
     overflow: hidden;
@@ -323,23 +349,20 @@ code, pre, .font-mono {
     display: block;
     height: 100%;
     width: 50%;
-    background-color: #4B5563;
+    background-color: #4b5563;
     /* dev-border-tertiary */
     animation: loading 1.2s linear infinite;
   }
 
   /* Professional Text Gradient */
   .text-gradient {
-    background: linear-gradient(135deg,
-        #9CA3AF 0%,
-        /* dev-text-secondary */
-        #6B7280 25%,
-        /* dev-text-muted */
-        #4B5563 75%,
-        /* dev-text-subtle */
-        #374151 100%
-        /* dev-text-faint */
-      );
+    background: linear-gradient(
+      135deg,
+      #9ca3af 0%,
+      /* dev-text-secondary */ #6b7280 25%,
+      /* dev-text-muted */ #4b5563 75%,
+      /* dev-text-subtle */ #374151 100% /* dev-text-faint */
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -350,24 +373,27 @@ code, pre, .font-mono {
   .glass-panel {
     background-color: rgba(45, 45, 45, 0.8);
     /* dev-border with alpha - darker */
-    border: 1px solid #2D2D2D;
+    border: 1px solid #2d2d2d;
     /* dev-border - very dark gray */
     border-radius: 12px;
     /* Modern rounded corners */
     padding: 1.25rem;
     /* 20px */
     backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
-                0 2px 8px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(107, 114, 128, 0.1);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.2),
+      0 2px 8px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(107, 114, 128, 0.1);
   }
 
   /* Professional Skeleton Loading */
   .skeleton {
-    background: linear-gradient(90deg,
-        rgba(59, 59, 59, 0.3) 25%,
-        rgba(75, 75, 75, 0.5) 50%,
-        rgba(59, 59, 59, 0.3) 75%);
+    background: linear-gradient(
+      90deg,
+      rgba(59, 59, 59, 0.3) 25%,
+      rgba(75, 75, 75, 0.5) 50%,
+      rgba(59, 59, 59, 0.3) 75%
+    );
     background-size: 200% 100%;
     animation: skeleton 1.5s ease-in-out infinite;
     border-radius: 6px;
@@ -386,7 +412,7 @@ code, pre, .font-mono {
   /* Professional Custom Scrollbar */
   .scrollbar-custom {
     scrollbar-width: thin;
-    scrollbar-color: #2D2D2D transparent;
+    scrollbar-color: #2d2d2d transparent;
   }
 
   .scrollbar-custom::-webkit-scrollbar {
@@ -398,14 +424,14 @@ code, pre, .font-mono {
   }
 
   .scrollbar-custom::-webkit-scrollbar-thumb {
-    background-color: #2D2D2D;
+    background-color: #2d2d2d;
     /* dev-border - very dark gray */
     border-radius: 3px;
     border: 1px solid rgba(45, 45, 45, 0.5);
   }
 
   .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-    background-color: #4B5563;
+    background-color: #4b5563;
     /* dev-border-tertiary */
   }
 
@@ -415,7 +441,8 @@ code, pre, .font-mono {
   }
 
   @keyframes breathing {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 1;
       transform: scale(1);
     }
@@ -427,7 +454,7 @@ code, pre, .font-mono {
 
   /* Force border colors for dev theme */
   .border-dev-border {
-    border-color: #2A2A2A !important; /* Medium-dark gray for main borders */
+    border-color: #2a2a2a !important; /* Medium-dark gray for main borders */
   }
 
   .border-dev-border-subtle {
@@ -439,7 +466,7 @@ code, pre, .font-mono {
   }
 
   .border-dev-accent {
-    border-color: #4A4A4A !important; /* Gray for accent borders */
+    border-color: #4a4a4a !important; /* Gray for accent borders */
   }
 
   .border-dev-border-accent {
@@ -448,24 +475,28 @@ code, pre, .font-mono {
 
   /* Professional Glow Effects */
   .shadow-glow-accent {
-    box-shadow: 0 0 12px rgba(107, 114, 128, 0.2),
-                0 0 24px rgba(107, 114, 128, 0.1),
-                inset 0 0 12px rgba(107, 114, 128, 0.05);
+    box-shadow:
+      0 0 12px rgba(107, 114, 128, 0.2),
+      0 0 24px rgba(107, 114, 128, 0.1),
+      inset 0 0 12px rgba(107, 114, 128, 0.05);
   }
 
   .shadow-glow-success {
-    box-shadow: 0 0 12px rgba(52, 211, 153, 0.2),
-                0 0 24px rgba(52, 211, 153, 0.1);
+    box-shadow:
+      0 0 12px rgba(52, 211, 153, 0.2),
+      0 0 24px rgba(52, 211, 153, 0.1);
   }
 
   .shadow-glow-error {
-    box-shadow: 0 0 12px rgba(248, 113, 113, 0.2),
-                0 0 24px rgba(248, 113, 113, 0.1);
+    box-shadow:
+      0 0 12px rgba(248, 113, 113, 0.2),
+      0 0 24px rgba(248, 113, 113, 0.1);
   }
 
   .shadow-glow-info {
-    box-shadow: 0 0 12px rgba(96, 165, 250, 0.2),
-                0 0 24px rgba(96, 165, 250, 0.1);
+    box-shadow:
+      0 0 12px rgba(96, 165, 250, 0.2),
+      0 0 24px rgba(96, 165, 250, 0.1);
   }
 
   /* Monaco Editor Font Override - Ensure JetBrains Mono is applied */
@@ -473,7 +504,8 @@ code, pre, .font-mono {
   .monaco-editor .monaco-editor-background,
   .monaco-editor .margin,
   .monaco-editor .inputarea {
-    font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace !important;
+    font-family:
+      'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace !important;
   }
 
   /* Professional Navigation Tabs */
@@ -484,7 +516,9 @@ code, pre, .font-mono {
     font-size: 0.875rem;
     /* 14px */
     font-weight: 600;
-    font-family: '"Plus Jakarta Sans"', "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", "WenQuanYi Micro Hei", sans-serif;
+    font-family:
+      '"Plus Jakarta Sans"', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+      '微软雅黑', 'WenQuanYi Micro Hei', sans-serif;
     border-radius: 8px;
     /* Modern tab radius */
     border: 1px solid transparent;
@@ -496,17 +530,18 @@ code, pre, .font-mono {
   .nav-item-active {
     background-color: rgba(107, 114, 128, 0.15);
     /* dev-accent-subtle */
-    color: #9CA3AF;
+    color: #9ca3af;
     /* dev-text-secondary */
     border-color: rgba(107, 114, 128, 0.3);
-    box-shadow: 0 0 8px rgba(107, 114, 128, 0.15),
-                inset 0 1px 0 rgba(107, 114, 128, 0.1);
+    box-shadow:
+      0 0 8px rgba(107, 114, 128, 0.15),
+      inset 0 1px 0 rgba(107, 114, 128, 0.1);
   }
 
   .nav-item-inactive {
-    background-color: #2D2D2D;
+    background-color: #2d2d2d;
     /* dev-border - very dark gray */
-    color: #6B7280;
+    color: #6b7280;
     /* dev-text-muted */
     border-color: #374151;
     /* dev-border-secondary */
@@ -515,9 +550,9 @@ code, pre, .font-mono {
   .nav-item-inactive:hover {
     background-color: #374151;
     /* dev-border-secondary */
-    color: #9CA3AF;
+    color: #9ca3af;
     /* dev-text-primary - more gray */
-    border-color: #4B5563;
+    border-color: #4b5563;
     /* dev-border-tertiary */
     transform: translateY(-1px);
   }

@@ -17,7 +17,7 @@ export default function MCPStatus() {
       // const data = await response.json();
 
       // For now, use mock data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       setServices(mockMCPServices);
     } catch (error) {
       console.error('Failed to fetch MCP services:', error);
@@ -62,15 +62,13 @@ export default function MCPStatus() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-safeflow-text-primary">
-          MCP 服务状态
-        </h3>
+        <h3 className="text-sm font-medium text-safeflow-text-primary">MCP 服务状态</h3>
         <button
           onClick={fetchMCPServices}
           disabled={isLoading}
           className="p-1 rounded hover:bg-safeflow-bg-tertiary transition-colors"
         >
-          <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+          <RefreshCw className={cn('w-4 h-4', isLoading && 'animate-spin')} />
         </button>
       </div>
 
@@ -87,10 +85,12 @@ export default function MCPStatus() {
                   {service.name}
                 </span>
               </div>
-              <span className={cn(
-                "text-xs px-2 py-1 rounded-full border",
-                getStatusColor(service.status)
-              )}>
+              <span
+                className={cn(
+                  'text-xs px-2 py-1 rounded-full border',
+                  getStatusColor(service.status)
+                )}
+              >
                 {service.status}
               </span>
             </div>

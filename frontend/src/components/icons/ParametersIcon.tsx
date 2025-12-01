@@ -1,7 +1,9 @@
 import React from 'react';
 import { IconBase } from './IconBase';
 
-export const ParametersIcon: React.FC<Omit<React.ComponentProps<typeof IconBase>, 'children'>> = (props) => (
+export const ParametersIcon: React.FC<
+  Omit<React.ComponentProps<typeof IconBase>, 'children'>
+> = (props) => (
   <IconBase {...props}>
     <line x1="4" y1="21" x2="4" y2="14" />
     <line x1="4" y1="10" x2="4" y2="3" />

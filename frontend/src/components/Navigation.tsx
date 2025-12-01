@@ -16,44 +16,44 @@ export default function Navigation() {
       href: '/',
       label: '首页',
       icon: '🏠',
-      active: pathname === '/'
+      active: pathname === '/',
     },
     {
       href: '/mcp',
       label: 'MCP Inspector',
       icon: '🔧',
-      active: pathname === '/mcp'
+      active: pathname === '/mcp',
     },
     {
       href: '/tools',
       label: '工具管理',
       icon: '🛠️',
-      active: pathname === '/tools'
+      active: pathname === '/tools',
     },
     {
       href: '/tasks',
       label: '任务管理',
       icon: '📋',
-      active: pathname === '/tasks'
+      active: pathname === '/tasks',
     },
     {
       href: '/results',
       label: '结果分析',
       icon: '📊',
-      active: pathname === '/results'
+      active: pathname === '/results',
     },
     {
       href: '/integrations',
       label: '系统集成',
       icon: '🔧',
-      active: pathname === '/integrations'
+      active: pathname === '/integrations',
     },
     {
       href: '/settings',
       label: '系统设置',
       icon: '⚙️',
-      active: pathname === '/settings'
-    }
+      active: pathname === '/settings',
+    },
   ];
 
   return (

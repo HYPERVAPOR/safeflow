@@ -12,7 +12,9 @@ export default function Loading({ size = 'md', message }: LoadingProps) {
 
   return (
     <div className="flex flex-col items-center justify-center p-8">
-      <div className={`${sizeClasses[size]} border-2 border-safeflow-border border-t-safeflow-accent rounded-full animate-spin`}></div>
+      <div
+        className={`${sizeClasses[size]} border-2 border-safeflow-border border-t-safeflow-accent rounded-full animate-spin`}
+      ></div>
       {message && (
         <p className="mt-4 text-safeflow-text-secondary text-center">{message}</p>
       )}

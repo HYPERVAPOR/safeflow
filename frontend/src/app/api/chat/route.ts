@@ -17,8 +17,13 @@ export async function POST(req: NextRequest) {
     const { messages } = await req.json();
 
     // 检查 API Key 是否配置
-    if (!process.env.DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY === 'your_deepseek_api_key_here') {
-      throw new Error('DeepSeek API Key 未配置或无效，请检查 .env.local 文件中的 DEEPSEEK_API_KEY');
+    if (
+      !process.env.DEEPSEEK_API_KEY ||
+      process.env.DEEPSEEK_API_KEY === 'your_deepseek_api_key_here'
+    ) {
+      throw new Error(
+        'DeepSeek API Key 未配置或无效，请检查 .env.local 文件中的 DEEPSEEK_API_KEY'
+      );
     }
 
     const response = await chatWithAI(messages);
@@ -27,17 +32,18 @@ export async function POST(req: NextRequest) {
     console.error('Chat API Error:', error);
 
     // 返回更详细的错误信息用于调试
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred';
 
     return new Response(
       JSON.stringify({
         error: 'Failed to process chat request',
         details: errorMessage,
-        suggestion: '请检查 DeepSeek API Key 配置和网络连接'
+        suggestion: '请检查 DeepSeek API Key 配置和网络连接',
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
   }

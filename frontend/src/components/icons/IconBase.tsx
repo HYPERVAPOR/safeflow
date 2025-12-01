@@ -11,7 +11,7 @@ export const IconBase: React.FC<IconBaseProps> = ({
   size = 20,
   className = '',
   color = 'currentColor',
-  children
+  children,
 }) => {
   return (
     <svg
