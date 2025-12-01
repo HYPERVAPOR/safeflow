@@ -10,7 +10,7 @@ app = FastAPI(
     description="基于 LLM Agent 的智能测试平台接入系统 API",
     version="1.0.0",
     docs_url="/api/docs",
-    redoc_url="/api/redoc"
+    redoc_url="/api/redoc",
 )
 
 # Configure CORS
@@ -42,6 +42,7 @@ async def startup_event():
     """Initialize services on startup"""
     try:
         from app.services.mcp_service import mcp_service
+
         await mcp_service.initialize()
         print("✅ MCP service initialized successfully")
     except Exception as e:
@@ -50,4 +51,5 @@ async def startup_event():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

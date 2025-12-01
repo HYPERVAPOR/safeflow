@@ -97,9 +97,9 @@ const COLUMN_MIN_WIDTH: ColumnWidths = {
 };
 
 const DEFAULT_COLUMN_WIDTH: ColumnWidths = {
-  left: 280,   
-  center: 1200,  
-  right: 280   
+  left: 240,   // Fixed 240px sidebar as per design spec
+  center: 1200,
+  right: 320
 };
 
 const clampValue = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -111,6 +111,49 @@ const formatCategory = (category: string) =>
         .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
         .join(' ')
     : 'Uncategorized';
+
+const getShortDescription = (tool: MCPTool) => {
+  // 根据工具名称返回简短概括
+  switch (tool.name) {
+    case 'semgrep':
+      return '静态代码分析工具';
+    case 'trivy':
+      return '全面安全扫描器';
+    case 'owasp_zap':
+      return 'Web应用安全测试';
+    case 'nmap':
+      return '网络端口扫描工具';
+    case 'burp_suite':
+      return 'Web安全测试平台';
+    case 'metasploit':
+      return '渗透测试框架';
+    case 'nikto':
+      return 'Web服务器扫描器';
+    case 'sqlmap':
+      return 'SQL注入检测工具';
+    case 'dirb':
+      return '目录爆破工具';
+    case 'hydra':
+      return '在线密码破解工具';
+    case 'john':
+      return '离线密码破解工具';
+    case 'wireshark':
+      return '网络协议分析器';
+    case 'tcpdump':
+      return '网络数据包捕获';
+    case 'netcat':
+      return '网络工具瑞士军刀';
+    case 'curl':
+      return 'HTTP请求工具';
+    case 'wget':
+      return '文件下载工具';
+    default:
+      // 如果没有预设的简短描述，则截取原描述的前20个字符
+      return tool.description.length > 15
+        ? tool.description.substring(0, 15) + '...'
+        : tool.description;
+  }
+};
 
 const sampleValueFromSchema = (schema: any): any => {
   if (!schema) return 'value';
@@ -549,24 +592,26 @@ export default function MCPInspectorPage() {
   }, [serverStatus, availabilityRatio]);
 
   return (
-    <div className="h-screen w-screen bg-gray-950 text-gray-200 overflow-hidden flex flex-col">
-      <header className="flex-shrink-0 border-b border-gray-700 bg-gray-900/95 backdrop-blur-sm">
+    <div className="h-screen w-screen bg-dev-bg-primary text-dev-text-primary overflow-hidden flex flex-col font-sans">
+      <header className="flex-shrink-0 border-b border-dev-border-subtle bg-dev-bg-overlay/95 backdrop-blur-sm">
         <div className="flex items-center justify-between px-8 py-4">
           <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-1 text-gray-400 hover:text-gray-100 transition-colors text-sm">
+            <Link href="/" className="flex items-center space-x-2 text-dev-text-muted hover:text-dev-text-primary transition-colors duration-150 text-sm font-medium">
               <Icons.ChevronLeftIcon size={16} />
               <span>返回首页</span>
             </Link>
             <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-gray-500">MCP Inspector</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-dev-text-muted font-semibold">MCP Inspector</p>
               <h1 className="text-2xl font-semibold text-gradient">Server Control Plane</h1>
             </div>
           </div>
           <div className="flex items-center space-x-4">
             {serverStatus?.version && (
-              <div className="text-xs text-gray-500 uppercase tracking-wide">v{serverStatus.version}</div>
+              <div className="text-xs text-dev-text-muted uppercase tracking-wide font-mono bg-dev-tertiary px-3 py-1 rounded-full border border-dev-border-accent">
+                v{serverStatus.version}
+              </div>
             )}
-            <div className="flex items-center space-x-2 rounded-full border border-gray-700 px-4 py-2">
+            <div className="flex items-center space-x-2 rounded-full border border-dev-border-accent bg-dev-tertiary/50 px-4 py-2">
               <span
                 className={`w-2.5 h-2.5 rounded-full breathing-dot ${
                   statusMeta.tone === 'success'
@@ -576,7 +621,7 @@ export default function MCPInspectorPage() {
                     : 'bg-red-500'
                 }`}
               ></span>
-              <span className="text-sm text-gray-300">
+              <span className="text-sm text-dev-text-primary font-medium">
                 {statusMeta.label}
               </span>
             </div>
@@ -586,8 +631,11 @@ export default function MCPInspectorPage() {
           </div>
         </div>
         {error && (
-          <div className="px-8 py-2 text-sm text-gray-error bg-red-500/10 border-t border-night-error/30">
-            {error}
+          <div className="px-8 py-3 text-sm text-dev-error bg-dev-error-subtle border-t border-dev-error/30">
+            <div className="flex items-center space-x-2">
+              <Icons.StatusErrorIcon size={14} />
+              <span>{error}</span>
+            </div>
           </div>
         )}
       </header>
@@ -595,41 +643,41 @@ export default function MCPInspectorPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-hidden">
           <div className="flex h-full w-full overflow-hidden">
-            {/* Tool List */}
+            {/* Professional Tool List Sidebar */}
             <aside
               style={{ width: sidebarCollapsed ? 72 : columnWidths.left, flexShrink: 0 }}
-              className="h-full border-r border-gray-700 bg-gray-800 flex flex-col"
+              className="h-full border-r border-dev-border bg-dev-bg-secondary flex flex-col"
             >
-              <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700 bg-night-750/30">
+              <div className="flex items-center justify-between px-4 py-4 border-b border-dev-border-subtle bg-dev-tertiary/30">
                 {!sidebarCollapsed && (
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">工具集</p>
-                    <p className="text-gray-300 text-sm">
+                    <p className="text-xs text-dev-text-muted uppercase tracking-wider font-semibold">工具集</p>
+                    <p className="text-dev-text-primary text-sm font-medium">
                       {serverStatus?.available_tools_count ?? 0}/{serverStatus?.total_tools_count ?? 0} 可用
                     </p>
                   </div>
                 )}
                 <button
                   onClick={() => setSidebarCollapsed((prev) => !prev)}
-                  className="rounded-full border border-gray-700 text-gray-400 hover:text-gray-100 hover:border-night-500 transition-colors p-2"
+                  className="rounded-full border border-dev-border-secondary text-dev-text-muted hover:text-dev-text-primary hover:border-dev-accent transition-all duration-150 p-2 hover:bg-dev-accent-subtle"
                 >
                   {sidebarCollapsed ? <Icons.ChevronRightIcon size={12} /> : <Icons.ChevronLeftIcon size={12} />}
                 </button>
               </div>
 
               {!sidebarCollapsed && (
-                <div className="px-4 py-3 border-b border-gray-700 bg-night-750/20">
+                <div className="px-4 py-3 border-b border-dev-border-subtle bg-dev-tertiary/20">
                   <div className="relative">
                     <Icons.SearchIcon
                       size={14}
-                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-dev-text-muted"
                     />
                     <input
                       type="text"
                       placeholder="搜索工具..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="input text-sm pl-10"
+                      className="input text-sm pl-10 bg-dev-tertiary border-dev-border-accent focus:border-dev-accent"
                     />
                   </div>
                 </div>
@@ -639,58 +687,50 @@ export default function MCPInspectorPage() {
                 {loading ? (
                   <div className="flex flex-col space-y-3 py-6">
                     {Array.from({ length: 6 }).map((_, idx) => (
-                      <div key={idx} className="skeleton h-14 rounded-xl" />
+                      <div key={idx} className="skeleton h-14 rounded-lg" />
                     ))}
                   </div>
                 ) : filteredTools.length === 0 ? (
-                  <div className="text-center text-sm text-gray-500 mt-10">没有匹配的工具</div>
+                  <div className="text-center text-sm text-dev-text-muted mt-10">没有匹配的工具</div>
                 ) : (
                   Object.entries(groupedTools).map(([category, categoryTools]) => (
                     <div key={category} className="mb-4">
                       <button
-                        className="flex w-full items-center justify-between text-xs uppercase tracking-wide text-gray-500 hover:text-gray-200 transition-colors"
+                        className="flex w-full items-center justify-between text-xs uppercase tracking-wider text-dev-text-muted hover:text-dev-text-primary transition-colors duration-150 py-2"
                         onClick={() =>
                           setExpandedGroups((prev) => ({ ...prev, [category]: !prev[category] }))
                         }
                       >
                         <span className="flex items-center space-x-2">
-                          <span className="w-7 h-7 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center">
+                          <span className="w-7 h-7 rounded-lg bg-dev-tertiary border border-dev-border-secondary flex items-center justify-center">
                             {renderToolIcon(category, 16)}
                           </span>
-                          {!sidebarCollapsed && <span>{formatCategory(category)}</span>}
+                          {!sidebarCollapsed && <span className="font-medium">{formatCategory(category)}</span>}
                         </span>
                         {!sidebarCollapsed && (
-                          <span className="text-gray-600">
+                          <span className="text-dev-text-subtle transition-transform duration-150">
                             {expandedGroups[category] ? <Icons.ChevronDownIcon size={12} /> : <Icons.ChevronRightIcon size={12} />}
                           </span>
                         )}
                       </button>
                       {expandedGroups[category] && (
-                        <div className="mt-3 space-y-2">
+                        <div className="mt-2 space-y-1.5">
                           {categoryTools.map((tool) => (
                             <div
                               key={tool.name}
                               onClick={() => setSelectedTool(tool)}
-                              className={`rounded-2xl border px-3 py-3 cursor-pointer transition-all duration-200 hover:border-blue-400/60 hover:bg-blue-500/5 ${
+                              className={`rounded-lg border px-3 py-3 cursor-pointer transition-all duration-200 hover:border-dev-accent hover:bg-dev-accent-subtle ${
                                 selectedTool?.name === tool.name
-                                  ? 'border-blue-400 bg-blue-500/10 shadow-glow-blue'
-                                  : 'border-gray-700 bg-gray-900/40'
+                                  ? 'border-dev-accent !bg-zinc-800'
+                                  : 'border-dev-border-secondary bg-dev-hover/50'
                               }`}
                             >
-                              <div className="flex items-center justify-between">
-                                <div className="font-medium text-gray-100 truncate">{tool.name}</div>
-                                <span className={tool.available ? 'text-green-500' : 'text-red-500'}>
-                                  {renderStatusIcon(
-                                    tool.available ? 'StatusSuccessIcon' : 'StatusErrorIcon',
-                                    10
-                                  )}
-                                </span>
-                              </div>
+                              <div className="font-medium text-dev-text-primary truncate text-sm">{tool.name}</div>
                               {!sidebarCollapsed && (
                                 <>
-                                  <p className="text-xs text-gray-500 line-clamp-2 mt-1">{tool.description}</p>
-                                  <div className="mt-2 flex items-center justify-between text-[11px] text-gray-500">
-                                    <span>{tool.version}</span>
+                                  <p className="text-xs text-dev-text-muted mt-1 leading-tight">{getShortDescription(tool)}</p>
+                                  <div className="mt-2 flex items-center justify-between text-[11px] text-dev-text-subtle">
+                                    <span className="font-mono">{tool.version}</span>
                                     <span>{formatCategory(tool.category)}</span>
                                   </div>
                                 </>
@@ -705,57 +745,67 @@ export default function MCPInspectorPage() {
               </div>
             </aside>
 
-            {/* Divider */}
+            {/* Professional Divider */}
             <div
               role="separator"
               onMouseDown={(event) => handleColumnDragStart(event, 'left')}
-              className="flex items-center justify-center w-3 cursor-col-resize select-none border-r border-gray-700/50 bg-night-700/30 hover:bg-night-600/50 transition-colors"
+              className="flex items-center justify-center w-3 cursor-col-resize select-none border-r border-dev-border-subtle bg-dev-hover/30 hover:bg-dev-accent-subtle/50 transition-colors duration-150"
             >
-              <div className="h-16 w-0.5 rounded-full bg-night-600/50" />
+              <div className="h-16 w-0.5 rounded-full bg-dev-border" />
             </div>
 
-            {/* Tool details */}
+            {/* Professional Tool Details */}
             <main
               style={{ width: columnWidths.center, flexShrink: 0 }}
-              className="h-full overflow-hidden px-6 py-6 bg-gray-850"
+              className="h-full overflow-hidden px-6 py-6 bg-dev-bg-primary"
             >
               <div className="h-full overflow-y-auto space-y-6 scrollbar-custom pr-2">
-                <section className="glass-panel p-5 flex items-center justify-between">
+                <section className="glass-panel p-6 flex items-center justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-500">服务可用性</p>
-                    <p className="text-2xl font-semibold text-gray-100 mt-2">
+                    <p className="text-xs uppercase tracking-wider text-dev-text-muted font-semibold">服务可用性</p>
+                    <p className="text-2xl font-semibold text-dev-text-primary mt-2">
                       {(availabilityRatio * 100).toFixed(0)}%
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-dev-text-muted mt-1">
                       {serverStatus?.available_tools_count ?? 0} / {serverStatus?.total_tools_count ?? 0} 工具在线
                     </p>
                   </div>
-                  <svg width="96" height="96" viewBox="0 0 96 96" className="-rotate-90">
-                    <circle cx="48" cy="48" r="36" stroke="rgba(255,255,255,0.08)" strokeWidth="8" fill="none" />
-                    <circle
-                      cx="48"
-                      cy="48"
-                      r="36"
-                      stroke="#06b6d4"
-                      strokeWidth="8"
-                      strokeDasharray={`${ringCircumference}`}
-                      strokeDashoffset={`${ringOffset}`}
-                      strokeLinecap="round"
-                      fill="none"
-                    />
-                  </svg>
+                  <div className="relative">
+                    <svg width="96" height="96" viewBox="0 0 96 96" className="-rotate-90">
+                      <circle cx="48" cy="48" r="36" stroke="rgba(107, 114, 128, 0.2)" strokeWidth="8" fill="none" />
+                      <circle
+                        cx="48"
+                        cy="48"
+                        r="36"
+                        stroke="#6B7280"
+                        strokeWidth="8"
+                        strokeDasharray={`${ringCircumference}`}
+                        strokeDashoffset={`${ringOffset}`}
+                        strokeLinecap="round"
+                        fill="none"
+                        className="drop-shadow-[0_0_8px_rgba(107,114,128,0.3)]"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-lg font-bold text-dev-text-primary">
+                        {(availabilityRatio * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                  </div>
                 </section>
 
                 {selectedTool ? (
-                  <section key={selectedTool.name} className="space-y-6 animate-tool-panel">
+                  <section key={selectedTool.name} className="space-y-6">
                     <div className="glass-panel p-6">
                       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="space-y-3">
-                          <div className="flex items-center space-x-3">
-                            <div className="tool-icon text-2xl">{renderToolIcon(selectedTool.category, 28)}</div>
+                        <div className="space-y-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="tool-icon text-2xl p-3 rounded-lg bg-dev-tertiary border border-dev-border-secondary">
+                              {renderToolIcon(selectedTool.category, 24)}
+                            </div>
                             <div>
-                              <h2 className="text-2xl font-semibold text-gray-100">{selectedTool.name}</h2>
-                              <p className="text-gray-500 text-sm">{selectedTool.capability.author || '未知作者'}</p>
+                              <h2 className="text-2xl font-semibold text-dev-text-primary">{selectedTool.name}</h2>
+                              <p className="text-dev-text-muted text-sm font-medium">{selectedTool.capability.author || '未知作者'}</p>
                             </div>
                           </div>
                           <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -766,21 +816,21 @@ export default function MCPInspectorPage() {
                             >
                               {selectedTool.available ? '可用' : '不可用'}
                             </span>
-                            <span className="inline-flex items-center rounded-full border border-gray-700 px-3 py-1 text-xs text-gray-400">
+                            <span className="inline-flex items-center rounded-full border border-dev-border-accent bg-dev-tertiary px-3 py-1 text-xs text-dev-text-muted font-mono">
                               v{selectedTool.version}
                             </span>
-                            <span className="text-gray-400">{formatCategory(selectedTool.category)}</span>
+                            <span className="text-dev-text-subtle font-medium">{formatCategory(selectedTool.category)}</span>
                           </div>
                         </div>
                         <div className="flex items-center space-x-3">
                           {selectedTool.capability.documentation && (
-                            <Link href={selectedTool.capability.documentation} target="_blank" className="btn btn-ghost text-sm flex items-center space-x-1">
+                            <Link href={selectedTool.capability.documentation} target="_blank" className="btn btn-ghost text-sm flex items-center space-x-2">
                               <Icons.DocumentationIcon size={14} />
                               <span>文档</span>
                             </Link>
                           )}
                           {selectedTool.capability.homepage && (
-                            <Link href={selectedTool.capability.homepage} target="_blank" className="btn btn-ghost text-sm flex items-center space-x-1">
+                            <Link href={selectedTool.capability.homepage} target="_blank" className="btn btn-ghost text-sm flex items-center space-x-2">
                               <Icons.ExternalLinkIcon size={14} />
                               <span>官网</span>
                             </Link>
@@ -806,56 +856,58 @@ export default function MCPInspectorPage() {
 
                     <div className="glass-panel p-6">
                       {detailTab === 'overview' ? (
-                        <div className="space-y-6 notion-block">
+                        <div className="space-y-6">
                           <div>
-                            <h3 className="text-lg font-semibold mb-2">工具简介</h3>
-                            <p>{selectedTool.description}</p>
+                            <h3 className="text-lg font-semibold mb-3 text-dev-text-primary">工具简介</h3>
+                            <p className="text-dev-text-primary leading-relaxed">{selectedTool.description}</p>
                           </div>
                           <div className="grid gap-4 md:grid-cols-2">
-                            <div className="rounded-2xl border border-gray-700 bg-gray-900/40 p-4 space-y-3">
-                              <h4 className="text-sm text-gray-400 uppercase tracking-wide">基础信息</h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">版本</span>
-                                  <span className="font-mono text-gray-100">{selectedTool.capability.version || '未标注'}</span>
+                            <div className="rounded-lg border border-dev-border-secondary bg-dev-hover/30 p-4 space-y-3">
+                              <h4 className="text-sm text-dev-text-muted uppercase tracking-wider font-semibold">基础信息</h4>
+                              <div className="space-y-3 text-sm">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-dev-text-muted">版本</span>
+                                  <span className="font-mono text-dev-text-primary bg-dev-tertiary px-2 py-1 rounded border border-dev-border-accent">
+                                    {selectedTool.capability.version || '未标注'}
+                                  </span>
                                 </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">作者</span>
-                                  <span className="text-gray-100">{selectedTool.capability.author || '未知'}</span>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-dev-text-muted">作者</span>
+                                  <span className="text-dev-text-primary font-medium">{selectedTool.capability.author || '未知'}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">分类</span>
-                                  <span className="text-gray-100">{formatCategory(selectedTool.category)}</span>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-dev-text-muted">分类</span>
+                                  <span className="text-dev-text-primary font-medium">{formatCategory(selectedTool.category)}</span>
                                 </div>
                               </div>
                             </div>
-                            <div className="rounded-2xl border border-gray-700 bg-gray-900/40 p-4 space-y-3">
-                              <h4 className="text-sm text-gray-400 uppercase tracking-wide">能力标签</h4>
-                              <div className="space-y-2 text-sm">
+                            <div className="rounded-lg border border-dev-border-secondary bg-dev-hover/30 p-4 space-y-3">
+                              <h4 className="text-sm text-dev-text-muted uppercase tracking-wider font-semibold">能力标签</h4>
+                              <div className="space-y-3 text-sm">
                                 <div>
-                                  <p className="text-gray-500">语言支持</p>
-                                  <div className="mt-1 flex flex-wrap gap-2">
+                                  <p className="text-dev-text-muted mb-2">语言支持</p>
+                                  <div className="flex flex-wrap gap-2">
                                     {selectedTool.capability.supported_languages?.map((lang) => (
                                       <span
                                         key={lang}
-                                        className="px-2 py-0.5 rounded-full bg-gray-800 border border-gray-700 text-xs"
+                                        className="px-2 py-1 rounded-md bg-dev-tertiary border border-dev-border-accent text-xs font-mono text-dev-text-primary"
                                       >
                                         {lang}
                                       </span>
-                                    )) || <span className="text-gray-600">未提供</span>}
+                                    )) || <span className="text-dev-text-subtle">未提供</span>}
                                   </div>
                                 </div>
                                 <div>
-                                  <p className="text-gray-500">输出格式</p>
-                                  <div className="mt-1 flex flex-wrap gap-2">
+                                  <p className="text-dev-text-muted mb-2">输出格式</p>
+                                  <div className="flex flex-wrap gap-2">
                                     {selectedTool.capability.output_formats?.map((format) => (
                                       <span
                                         key={format}
-                                        className="px-2 py-0.5 rounded-full bg-gray-800 border border-gray-700 text-xs"
+                                        className="px-2 py-1 rounded-md bg-dev-tertiary border border-dev-border-accent text-xs font-mono text-dev-text-primary"
                                       >
                                         {format}
                                       </span>
-                                    )) || <span className="text-gray-600">未提供</span>}
+                                    )) || <span className="text-dev-text-subtle">未提供</span>}
                                   </div>
                                 </div>
                               </div>
@@ -864,12 +916,12 @@ export default function MCPInspectorPage() {
 
                           {selectedTool.capability.tags && selectedTool.capability.tags.length > 0 && (
                             <div>
-                              <h4 className="text-sm text-gray-400 uppercase tracking-wide mb-2">标签</h4>
+                              <h4 className="text-sm text-dev-text-muted uppercase tracking-wider font-semibold mb-3">标签</h4>
                               <div className="flex flex-wrap gap-2">
                                 {selectedTool.capability.tags.map((tag) => (
                                   <span
                                     key={tag}
-                                    className="px-3 py-1 rounded-full bg-night-accent/10 text-gray-accent text-xs font-medium"
+                                    className="px-3 py-1 rounded-full bg-dev-accent-subtle text-dev-accent text-xs font-medium border border-dev-border-accent"
                                   >
                                     #{tag}
                                   </span>
@@ -878,19 +930,18 @@ export default function MCPInspectorPage() {
                             </div>
                           )}
 
-                          <div className="space-y-2">
+                          <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                              <h4 className="text-sm font-medium text-gray-200">输入 Schema</h4>
+                              <h4 className="text-sm font-semibold text-dev-text-primary">输入 Schema</h4>
                               <button
                                 onClick={() => handleCopy('schema')}
-                                className="text-xs text-gray-accent hover:text-white transition-colors flex items-center space-x-1"
+                                className="text-xs text-dev-accent hover:text-dev-accent-hover transition-colors p-1"
                                 disabled={!schemaInput.trim()}
                               >
                                 <Icons.CopyIcon size={12} />
-                                <span>{copyState === 'schema' ? '已复制' : '复制'}</span>
                               </button>
                             </div>
-                            <div className="rounded-2xl border border-gray-700/50 bg-[#000000]/95 overflow-hidden">
+                            <div className="rounded-lg border border-dev-border-secondary bg-dev-tertiary/50 overflow-hidden">
                               <MonacoEditor
                                 height={schemaEditorHeight}
                                 defaultLanguage="json"
@@ -900,9 +951,11 @@ export default function MCPInspectorPage() {
                                 options={{
                                   readOnly: true,
                                   minimap: { enabled: false },
-                                  fontSize: 13,
-                                  fontLigatures: true,
-                                  fontFamily: 'JetBrains Mono, monospace',
+                                  fontSize: 14,
+                                  fontLigatures: false,
+                                  fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+                                  fontWeight: 'normal',
+                                  letterSpacing: 0,
                                   scrollBeyondLastLine: false,
                                   smoothScrolling: true,
                                   renderLineHighlight: 'all',
@@ -930,35 +983,38 @@ export default function MCPInspectorPage() {
                               return (
                                 <div
                                   key={paramName}
-                                  className={`rounded-2xl border px-4 py-4 transition-colors ${
+                                  className={`rounded-lg border px-4 py-4 transition-all duration-150 ${
                                     isRequired
-                                      ? 'border-night-accent/40 bg-night-accent/5'
-                                      : 'border-gray-700 bg-gray-900/30'
+                                      ? 'border-dev-accent/40 bg-dev-accent-subtle shadow-glow-accent'
+                                      : 'border-dev-border bg-dev-hover/30'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between">
-                                    <span className="font-mono text-gray-100">{paramName}</span>
+                                    <span className="font-mono text-dev-text-primary font-semibold">{paramName}</span>
                                     <span
-                                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                                      className={`text-xs font-medium px-2 py-1 rounded-full border ${
                                         isRequired
-                                          ? 'bg-red-500/20 text-gray-error'
-                                          : 'bg-yellow-500/20 text-gray-warning'
+                                          ? 'bg-dev-error-subtle text-dev-error border-dev-error/30'
+                                          : 'bg-dev-warning-subtle text-dev-warning border-dev-warning/30'
                                       }`}
                                     >
                                       {isRequired ? '必填' : '可选'}
                                     </span>
                                   </div>
-                                  <div className="mt-2 text-xs text-gray-500 uppercase tracking-wide">
+                                  <div className="mt-2 text-xs text-dev-text-muted uppercase tracking-wider font-semibold">
                                     类型：{paramConfig.type || '未知'}
                                   </div>
                                   {paramConfig.description && (
-                                    <p className="mt-2 text-sm text-gray-300">{paramConfig.description}</p>
+                                    <p className="mt-2 text-sm text-dev-text-primary leading-relaxed">{paramConfig.description}</p>
                                   )}
                                 </div>
                               );
                             })
                           ) : (
-                            <div className="text-center text-gray-500 py-10">该工具无需额外参数</div>
+                            <div className="text-center text-dev-text-muted py-16 bg-dev-hover/20 rounded-lg border border-dev-border-secondary">
+                              <Icons.ParametersIcon size={32} className="mx-auto mb-3 text-dev-text-subtle" />
+                              <p className="text-sm font-medium">该工具无需额外参数</p>
+                            </div>
                           )}
                         </div>
                       )}
@@ -966,39 +1022,39 @@ export default function MCPInspectorPage() {
                   </section>
                 ) : (
                   <div className="glass-panel p-12 text-center">
-                    <div className="text-4xl mb-4 text-gray-400">
+                    <div className="text-4xl mb-4 text-dev-text-subtle">
                       <Icons.CompassIcon size={32} />
                     </div>
-                    <h2 className="text-xl font-semibold mb-2">请选择一个工具</h2>
-                    <p className="text-gray-500">从左侧列表中选择工具以查看详情并进行调用测试。</p>
+                    <h2 className="text-xl font-semibold mb-2 text-dev-text-primary">请选择一个工具</h2>
+                    <p className="text-dev-text-muted">从左侧列表中选择工具以查看详情并进行调用测试。</p>
                   </div>
                 )}
               </div>
             </main>
 
-            {/* Divider */}
+            {/* Professional Divider */}
             <div
               role="separator"
               onMouseDown={(event) => handleColumnDragStart(event, 'right')}
-              className="flex items-center justify-center w-3 cursor-col-resize select-none border-l border-gray-700/50 bg-night-700/30 hover:bg-night-600/50 transition-colors"
+              className="flex items-center justify-center w-3 cursor-col-resize select-none border-l border-dev-border-subtle bg-dev-hover/30 hover:bg-dev-accent-subtle/50 transition-colors duration-150"
             >
-              <div className="h-16 w-0.5 rounded-full bg-night-600/50" />
+              <div className="h-16 w-0.5 rounded-full bg-dev-border" />
             </div>
 
-            {/* Try it out */}
+            {/* Professional Try It Out Panel */}
             <section
               style={{ flex: 1, minWidth: COLUMN_MIN_WIDTH.right }}
-              className="h-full border-l border-gray-700 bg-gray-900 flex flex-col"
+              className="h-full border-l border-dev-border bg-dev-bg-secondary flex flex-col"
             >
-              <div className="p-6 border-b border-gray-700 bg-night-750/30 flex items-center justify-between">
+              <div className="p-6 border-b border-dev-border-subtle bg-dev-tertiary/30 flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-500">Try It Out</p>
-                  <h3 className="text-lg font-semibold text-gray-100">实时调用</h3>
+                  <p className="text-xs uppercase tracking-wider text-dev-text-muted font-semibold">Try It Out</p>
+                  <h3 className="text-lg font-semibold text-dev-text-primary">实时调用</h3>
                 </div>
                 <button
                   onClick={executeTool}
                   disabled={!selectedTool || !selectedTool.available || isExecuting}
-                  className="btn btn-primary"
+                  className="btn btn-execute"
                 >
                   {isExecuting ? (
                     <>
@@ -1008,7 +1064,7 @@ export default function MCPInspectorPage() {
                   ) : (
                     <>
                       <Icons.ExecuteIcon size={14} className="mr-2" />
-                      Execute
+                      执行
                     </>
                   )}
                 </button>
@@ -1016,9 +1072,9 @@ export default function MCPInspectorPage() {
 
               {selectedTool ? (
                 <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 scrollbar-custom">
-                  <div className="rounded-2xl border border-gray-700 bg-gray-900/50 p-4 space-y-3">
+                  <div className="rounded-lg border border-dev-border-secondary bg-dev-hover/30 p-4 space-y-4">
                     <div className="grid grid-cols-2 gap-3 text-sm">
-                      <label className="text-gray-500">
+                      <label className="text-dev-text-muted font-medium">
                         Timeout (s)
                         <input
                           type="number"
@@ -1031,10 +1087,10 @@ export default function MCPInspectorPage() {
                               timeout: Number(e.target.value) || 300
                             }))
                           }
-                          className="input mt-1"
+                          className="input mt-1 bg-dev-tertiary border-dev-border-accent focus:border-dev-accent"
                         />
                       </label>
-                      <label className="text-gray-500">
+                      <label className="text-dev-text-muted font-medium">
                         Session Id
                         <input
                           type="text"
@@ -1045,10 +1101,10 @@ export default function MCPInspectorPage() {
                               session_id: e.target.value || undefined
                             }))
                           }
-                          className="input mt-1"
+                          className="input mt-1 bg-dev-tertiary border-dev-border-accent focus:border-dev-accent"
                         />
                       </label>
-                      <label className="text-gray-500">
+                      <label className="text-dev-text-muted font-medium">
                         User Id
                         <input
                           type="text"
@@ -1059,10 +1115,10 @@ export default function MCPInspectorPage() {
                               user_id: e.target.value || undefined
                             }))
                           }
-                          className="input mt-1"
+                          className="input mt-1 bg-dev-tertiary border-dev-border-accent focus:border-dev-accent"
                         />
                       </label>
-                      <label className="text-gray-500">
+                      <label className="text-dev-text-muted font-medium">
                         Workspace
                         <input
                           type="text"
@@ -1073,11 +1129,11 @@ export default function MCPInspectorPage() {
                               workspace_dir: e.target.value || undefined
                             }))
                           }
-                          className="input mt-1"
+                          className="input mt-1 bg-dev-tertiary border-dev-border-accent focus:border-dev-accent"
                         />
                       </label>
                     </div>
-                    <label className="inline-flex items-center space-x-2 text-sm text-gray-300">
+                    <label className="inline-flex items-center space-x-3 text-sm text-dev-text-primary font-medium cursor-pointer">
                       <input
                         type="checkbox"
                         checked={executionForm.enable_network}
@@ -1087,27 +1143,27 @@ export default function MCPInspectorPage() {
                             enable_network: e.target.checked
                           }))
                         }
+                        className="w-4 h-4 text-dev-accent border-dev-border-secondary rounded focus:ring-dev-accent focus:ring-2"
                       />
                       <span>允许网络访问</span>
                     </label>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-200">请求体 (JSON)</h4>
-                        <p className="text-xs text-gray-500">Monaco 编辑器自动高亮并提供滚动</p>
+                        <h4 className="text-sm font-semibold text-dev-text-primary">请求体 (JSON)</h4>
+                        <p className="text-xs text-dev-text-muted">Monaco 编辑器自动高亮并提供滚动</p>
                       </div>
                       <button
                         onClick={() => handleCopy('request')}
-                        className="text-xs text-gray-accent hover:text-white transition-colors flex items-center space-x-1"
+                        className="text-xs text-dev-accent hover:text-dev-accent-hover transition-colors p-1"
                         disabled={!jsonInput.trim()}
                       >
                         <Icons.CopyIcon size={12} />
-                        <span>{copyState === 'request' ? '已复制' : '复制'}</span>
                       </button>
                     </div>
-                    <div className="rounded-2xl border border-gray-700/50 bg-[#000000]/95 overflow-hidden">
+                    <div className="rounded-lg border border-dev-border bg-dev-tertiary/50 overflow-hidden">
                       <MonacoEditor
                         height="320px"
                         defaultLanguage="json"
@@ -1116,9 +1172,11 @@ export default function MCPInspectorPage() {
                         onChange={(value) => setJsonInput(value ?? '')}
                         options={{
                           minimap: { enabled: false },
-                          fontSize: 13,
-                          fontLigatures: true,
-                          fontFamily: 'JetBrains Mono, monospace',
+                          fontSize: 14,
+                          fontLigatures: false,
+                          fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+                          fontWeight: 'normal',
+                          letterSpacing: 0,
                           scrollBeyondLastLine: false,
                           smoothScrolling: true,
                           renderLineHighlight: 'all',
@@ -1140,22 +1198,25 @@ export default function MCPInspectorPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-medium text-gray-200">响应</h4>
-                      <div className="flex items-center space-x-2 text-xs text-gray-500">
-                        {responseTime !== null && <span>{responseTime}ms</span>}
+                      <h4 className="text-sm font-semibold text-dev-text-primary">响应</h4>
+                      <div className="flex items-center space-x-3 text-xs text-dev-text-muted">
+                        {responseTime !== null && (
+                          <span className="bg-dev-tertiary px-2 py-1 rounded border border-dev-border-accent font-mono">
+                            {responseTime}ms
+                          </span>
+                        )}
                         <button
                           onClick={() => handleCopy('response')}
-                          className="text-gray-accent hover:text-white transition-colors flex items-center space-x-1"
+                          className="text-dev-accent hover:text-dev-accent-hover transition-colors p-1"
                           disabled={!executionResult}
                         >
                           <Icons.CopyIcon size={12} />
-                          <span>{copyState === 'response' ? '已复制' : '复制'}</span>
                         </button>
                       </div>
                     </div>
-                    <div className="rounded-2xl border border-gray-700 bg-gray-900/60 p-4 h-64 overflow-auto scrollbar-custom">
+                    <div className="rounded-lg border border-dev-border-secondary bg-dev-hover/30 p-4 h-64 overflow-auto scrollbar-custom">
                       {isExecuting && !executionResult ? (
                         <div className="space-y-3">
                           <div className="loading-bar" />
@@ -1166,7 +1227,7 @@ export default function MCPInspectorPage() {
                         <>
                           <div className="flex items-center justify-between text-xs mb-3">
                             <div className="flex items-center space-x-2">
-                              <span className={executionResult.success ? 'text-green-500' : 'text-red-500'}>
+                              <span className={executionResult.success ? 'text-dev-success' : 'text-dev-error'}>
                                 {renderStatusIcon(
                                   executionResult.success ? 'StatusSuccessIcon' : 'StatusErrorIcon',
                                   12
@@ -1180,17 +1241,21 @@ export default function MCPInspectorPage() {
                                 {executionResult.success ? 'Success' : 'Error'}
                               </span>
                             </div>
-                            <span className="text-gray-500">耗时 {executionResult.execution_time.toFixed(2)}s</span>
+                            <span className="text-dev-text-muted bg-dev-tertiary px-2 py-1 rounded border border-dev-border-accent font-mono">
+                              {executionResult.execution_time.toFixed(2)}s
+                            </span>
                           </div>
                           {executionResult.error && (
-                            <p className="text-gray-error text-sm mb-2">{executionResult.error}</p>
+                            <p className="text-dev-error text-sm mb-2 bg-dev-error-subtle p-2 rounded border border-dev-error/30">
+                              {executionResult.error}
+                            </p>
                           )}
-                          <pre className="text-xs text-gray-200 whitespace-pre-wrap font-mono">
+                          <pre className="text-xs text-dev-text-primary whitespace-pre-wrap font-mono leading-relaxed">
                             {JSON.stringify(executionResult, null, 2)}
                           </pre>
                         </>
                       ) : (
-                        <div className="text-sm text-gray-500 h-full flex items-center justify-center">
+                        <div className="text-sm text-dev-text-muted h-full flex items-center justify-center bg-dev-hover/20 rounded-lg">
                           暂无响应，执行后将在此展示。
                         </div>
                       )}
@@ -1198,40 +1263,46 @@ export default function MCPInspectorPage() {
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 flex items-center justify-center text-gray-500">选择工具后可实时调试</div>
+                <div className="flex-1 flex items-center justify-center text-dev-text-muted bg-dev-hover/20 rounded-lg border border-dev-border-secondary">
+                  <div className="text-center">
+                    <Icons.ExecuteIcon size={32} className="mx-auto mb-3 text-dev-text-subtle" />
+                    <p className="text-sm font-medium">选择工具后可实时调试</p>
+                  </div>
+                </div>
               )}
             </section>
           </div>
         </div>
 
-        {/* Console footer */}
-        <div className="border-t border-gray-700 bg-gray-900 h-56 flex-shrink-0">
-          <div className="flex items-center justify-between px-6 py-3">
-            <div className="flex items-center space-x-2">
-              <Icons.ConsoleIcon size={16} />
-              <h4 className="text-sm font-medium text-gray-200">Console Logs</h4>
+        {/* Professional Console Footer */}
+        <div className="border-t border-dev-border-subtle bg-dev-bg-secondary h-56 flex-shrink-0">
+          <div className="flex items-center justify-between px-6 py-3 bg-dev-tertiary/30">
+            <div className="flex items-center space-x-3">
+              <Icons.ConsoleIcon size={16} className="text-dev-accent" />
+              <h4 className="text-sm font-semibold text-dev-text-primary">Console Logs</h4>
             </div>
-            <button onClick={() => setLogs([])} className="text-xs text-gray-500 hover:text-gray-200 transition-colors flex items-center space-x-1">
-              <Icons.CloseIcon size={12} />
-              <span>清空</span>
+            <button onClick={() => setLogs([])} className="text-xs text-dev-text-muted hover:text-dev-text-primary transition-colors px-2 py-1 rounded hover:bg-dev-hover/50">
+              Clear
             </button>
           </div>
-          <div className="h-[calc(100%-48px)] overflow-y-auto space-y-2 text-xs font-mono px-6 pb-4">
+          <div className="h-[calc(100%-48px)] overflow-y-auto space-y-2 text-xs font-mono px-6 pb-4 scrollbar-custom">
             {logs.length === 0 ? (
-              <div className="text-gray-600 text-center py-6">暂无日志</div>
+              <div className="text-dev-text-muted text-center py-6 bg-dev-hover/20 rounded-lg border border-dev-border-secondary">
+                暂无日志
+              </div>
             ) : (
               logs.map((log) => (
-                <div key={log.id} className="leading-relaxed">
-                  <span className="text-gray-500">[{log.timestamp.toLocaleTimeString([], { hour12: false })}]</span>{' '}
+                <div key={log.id} className="leading-relaxed font-mono">
+                  <span className="text-dev-text-subtle">[{log.timestamp.toLocaleTimeString([], { hour12: false })}]</span>{' '}
                   <span
                     className={
                       log.type === 'error'
-                        ? 'text-red-400'
+                        ? 'text-dev-error font-medium'
                         : log.type === 'success'
-                        ? 'text-green-400'
+                        ? 'text-dev-success font-medium'
                         : log.type === 'warning'
-                        ? 'text-yellow-400'
-                        : 'text-gray-300'
+                        ? 'text-dev-warning font-medium'
+                        : 'text-dev-text-primary'
                     }
                   >
                     {log.message}

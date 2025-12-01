@@ -5,6 +5,7 @@ Trivy MCP 工具实现
 
 import asyncio
 import json
+import logging
 import os
 import subprocess
 import tempfile
@@ -12,10 +13,14 @@ import time
 from typing import Any, Dict, List, Optional
 
 from app.core.mcp_base import (
-    MCPToolBase, ToolCapability, ToolParameter, ParameterType,
-    ToolCategory, ExecutionContext, ExecutionResult
+    ExecutionContext,
+    ExecutionResult,
+    MCPToolBase,
+    ParameterType,
+    ToolCapability,
+    ToolCategory,
+    ToolParameter,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +69,7 @@ class TrivyMCPTool(MCPToolBase):
                 required=True,
                 min_length=1,
                 max_length=1000,
-                format="trivy-target"
+                format="trivy-target",
             ),
             ToolParameter(
                 name="scan_type",
@@ -73,7 +78,7 @@ class TrivyMCPTool(MCPToolBase):
                 required=False,
                 default="fs",
                 enum=["fs", "image", "repo", "config"],
-                format="scan-type"
+                format="scan-type",
             ),
             ToolParameter(
                 name="severity",
@@ -81,7 +86,7 @@ class TrivyMCPTool(MCPToolBase):
                 description="漏洞严重性级别过滤",
                 required=False,
                 default=["UNKNOWN", "LOW", "MEDIUM", "HIGH", "CRITICAL"],
-                enum=["UNKNOWN", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+                enum=["UNKNOWN", "LOW", "MEDIUM", "HIGH", "CRITICAL"],
             ),
             ToolParameter(
                 name="security_checks",
@@ -89,7 +94,7 @@ class TrivyMCPTool(MCPToolBase):
                 description="安全检查类型",
                 required=False,
                 default=["vuln", "config"],
-                enum=["vuln", "config", "secret", "license"]
+                enum=["vuln", "config", "secret", "license"],
             ),
             ToolParameter(
                 name="output_format",
@@ -97,7 +102,15 @@ class TrivyMCPTool(MCPToolBase):
                 description="输出格式",
                 required=False,
                 default="json",
-                enum=["json", "table", "sarif", "cyclonedx", "spdx-json", "spdx-sbom", "coset-vuln"]
+                enum=[
+                    "json",
+                    "table",
+                    "sarif",
+                    "cyclonedx",
+                    "spdx-json",
+                    "spdx-sbom",
+                    "coset-vuln",
+                ],
             ),
             ToolParameter(
                 name="scanners",
@@ -105,28 +118,28 @@ class TrivyMCPTool(MCPToolBase):
                 description="指定扫描器",
                 required=False,
                 default=[],
-                enum=["vuln", "misconfig", "secret", "license"]
+                enum=["vuln", "misconfig", "secret", "license"],
             ),
             ToolParameter(
                 name="skip_dirs",
                 type=ParameterType.ARRAY,
                 description="跳过的目录列表",
                 required=False,
-                default=["vendor", "node_modules", ".git", ".svn", ".hg"]
+                default=["vendor", "node_modules", ".git", ".svn", ".hg"],
             ),
             ToolParameter(
                 name="skip_files",
                 type=ParameterType.ARRAY,
                 description="跳过的文件模式列表",
                 required=False,
-                default=["*.test.js", "*.spec.ts", "*.md", "*.txt"]
+                default=["*.test.js", "*.spec.ts", "*.md", "*.txt"],
             ),
             ToolParameter(
                 name="ignore_unfixed",
                 type=ParameterType.BOOLEAN,
                 description="是否忽略未修复的漏洞",
                 required=False,
-                default=False
+                default=False,
             ),
             ToolParameter(
                 name="ignore_file",
@@ -134,7 +147,7 @@ class TrivyMCPTool(MCPToolBase):
                 description="忽略规则文件路径",
                 required=False,
                 default="",
-                format="file-path"
+                format="file-path",
             ),
             ToolParameter(
                 name="timeout",
@@ -143,7 +156,7 @@ class TrivyMCPTool(MCPToolBase):
                 required=False,
                 default=600,
                 minimum=30,
-                maximum=3600
+                maximum=3600,
             ),
             ToolParameter(
                 name="cache_dir",
@@ -151,22 +164,22 @@ class TrivyMCPTool(MCPToolBase):
                 description="缓存目录路径",
                 required=False,
                 default="",
-                format="directory-path"
+                format="directory-path",
             ),
             ToolParameter(
                 name="list_all_packages",
                 type=ParameterType.BOOLEAN,
                 description="是否列出所有包（包括无漏洞的）",
                 required=False,
-                default=False
+                default=False,
             ),
             ToolParameter(
                 name="offline_scan",
                 type=ParameterType.BOOLEAN,
                 description="是否离线扫描（不更新数据库）",
                 required=False,
-                default=False
-            )
+                default=False,
+            ),
         ]
 
     @property
@@ -185,19 +198,41 @@ class TrivyMCPTool(MCPToolBase):
             homepage="https://github.com/aquasecurity/trivy",
             documentation="https://aquasecurity.github.io/trivy/",
             supported_languages=[
-                "Go", "Python", "Java", "Node.js", "Ruby", "PHP", "Rust",
-                "C/C++", ".NET", "Docker", "Kubernetes"
+                "Go",
+                "Python",
+                "Java",
+                "Node.js",
+                "Ruby",
+                "PHP",
+                "Rust",
+                "C/C++",
+                ".NET",
+                "Docker",
+                "Kubernetes",
             ],
             supported_formats=[
-                "filesystem", "container_image", "git_repository", "config_files"
+                "filesystem",
+                "container_image",
+                "git_repository",
+                "config_files",
             ],
             output_formats=[
-                "json", "table", "sarif", "cyclonedx", "spdx", "coset-vuln"
+                "json",
+                "table",
+                "sarif",
+                "cyclonedx",
+                "spdx",
+                "coset-vuln",
             ],
             tags=[
-                "vulnerability_scanner", "dependency_analysis", "container_security",
-                "cve_database", "config_checking", "secret_scanning", "license_checking"
-            ]
+                "vulnerability_scanner",
+                "dependency_analysis",
+                "container_security",
+                "cve_database",
+                "config_checking",
+                "secret_scanning",
+                "license_checking",
+            ],
         )
 
     async def validate_args(self, args: Dict[str, Any]) -> bool:
@@ -236,14 +271,20 @@ class TrivyMCPTool(MCPToolBase):
 
             # 验证输出格式
             if "output_format" in args:
-                valid_formats = [param.enum for param in self.parameters if param.name == "output_format"][0]
+                valid_formats = [
+                    param.enum
+                    for param in self.parameters
+                    if param.name == "output_format"
+                ][0]
                 if args["output_format"] not in valid_formats:
                     logger.error(f"Invalid output format: {args['output_format']}")
                     return False
 
             # 验证严重性级别
             if "severity" in args:
-                valid_severities = [param.enum for param in self.parameters if param.name == "severity"][0]
+                valid_severities = [
+                    param.enum for param in self.parameters if param.name == "severity"
+                ][0]
                 for severity in args["severity"]:
                     if severity not in valid_severities:
                         logger.error(f"Invalid severity level: {severity}")
@@ -251,7 +292,11 @@ class TrivyMCPTool(MCPToolBase):
 
             # 验证安全检查类型
             if "security_checks" in args:
-                valid_checks = [param.enum for param in self.parameters if param.name == "security_checks"][0]
+                valid_checks = [
+                    param.enum
+                    for param in self.parameters
+                    if param.name == "security_checks"
+                ][0]
                 for check in args["security_checks"]:
                     if check not in valid_checks:
                         logger.error(f"Invalid security check: {check}")
@@ -275,7 +320,7 @@ class TrivyMCPTool(MCPToolBase):
                 [self.trivy_path, "--version"],
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
             if result.returncode != 0:
                 logger.error(f"Trivy version check failed: {result.stderr}")
@@ -292,7 +337,9 @@ class TrivyMCPTool(MCPToolBase):
             logger.error(f"Trivy availability check failed: {str(e)}")
             return False
 
-    async def execute(self, args: Dict[str, Any], context: ExecutionContext) -> ExecutionResult:
+    async def execute(
+        self, args: Dict[str, Any], context: ExecutionContext
+    ) -> ExecutionResult:
         """执行 Trivy 扫描"""
         start_time = time.time()
 
@@ -366,7 +413,9 @@ class TrivyMCPTool(MCPToolBase):
             logger.info(f"Executing Trivy: {' '.join(cmd)}")
 
             # 创建临时输出文件
-            with tempfile.NamedTemporaryFile(mode='w', suffix=f'.{output_format}', delete=False) as tmp_file:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=f".{output_format}", delete=False
+            ) as tmp_file:
                 output_file = tmp_file.name
 
             # 重定向输出
@@ -377,13 +426,15 @@ class TrivyMCPTool(MCPToolBase):
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                cwd=context.workspace_dir or os.getcwd()
+                cwd=context.workspace_dir or os.getcwd(),
             )
 
             # 设置超时
             timeout = args.get("timeout", context.timeout)
             try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
+                stdout, stderr = await asyncio.wait_for(
+                    process.communicate(), timeout=timeout
+                )
             except asyncio.TimeoutError:
                 process.kill()
                 await process.wait()
@@ -391,7 +442,7 @@ class TrivyMCPTool(MCPToolBase):
                 return self.create_error_result(
                     tool_name=self.name,
                     error=f"Trivy execution timed out after {timeout} seconds",
-                    execution_time=execution_time
+                    execution_time=execution_time,
                 )
 
             execution_time = time.time() - start_time
@@ -400,7 +451,7 @@ class TrivyMCPTool(MCPToolBase):
             output_content = None
             if os.path.exists(output_file):
                 try:
-                    with open(output_file, 'r', encoding='utf-8') as f:
+                    with open(output_file, "r", encoding="utf-8") as f:
                         output_content = f.read()
                 except Exception as e:
                     logger.warning(f"Failed to read output file: {str(e)}")
@@ -412,13 +463,14 @@ class TrivyMCPTool(MCPToolBase):
                 pass
 
             # 检查执行结果
-            if process.returncode != 0 and process.returncode not in [0, 1]:  # Trivy 返回 1 表示发现漏洞
-                error_msg = stderr.decode('utf-8') if stderr else "Unknown error"
+            if process.returncode != 0 and process.returncode not in [
+                0,
+                1,
+            ]:  # Trivy 返回 1 表示发现漏洞
+                error_msg = stderr.decode("utf-8") if stderr else "Unknown error"
                 logger.error(f"Trivy execution failed: {error_msg}")
                 return self.create_error_result(
-                    tool_name=self.name,
-                    error=error_msg,
-                    execution_time=execution_time
+                    tool_name=self.name, error=error_msg, execution_time=execution_time
                 )
 
             # 解析结果统计
@@ -435,11 +487,17 @@ class TrivyMCPTool(MCPToolBase):
                             "schema_version": result_data.get("SchemaVersion"),
                             "created_at": result_data.get("CreatedAt"),
                             "results_count": len(result_data.get("Results", [])),
-                            "security_checks": security_checks
+                            "security_checks": security_checks,
                         }
 
                         # 统计漏洞数量
-                        vulnerability_stats = {"UNKNOWN": 0, "LOW": 0, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0}
+                        vulnerability_stats = {
+                            "UNKNOWN": 0,
+                            "LOW": 0,
+                            "MEDIUM": 0,
+                            "HIGH": 0,
+                            "CRITICAL": 0,
+                        }
                         for result in result_data.get("Results", []):
                             for vuln in result.get("Vulnerabilities", []):
                                 severity = vuln.get("Severity", "UNKNOWN")
@@ -454,7 +512,7 @@ class TrivyMCPTool(MCPToolBase):
                             "target": args["target"],
                             "config_results": len(result_data.get("Results", [])),
                             "checks_passed": 0,
-                            "checks_failed": 0
+                            "checks_failed": 0,
                         }
 
                 except Exception as e:
@@ -466,16 +524,14 @@ class TrivyMCPTool(MCPToolBase):
                 tool_name=self.name,
                 execution_time=execution_time,
                 output=output_content,
-                metadata=metadata
+                metadata=metadata,
             )
 
         except Exception as e:
             execution_time = time.time() - start_time
             logger.error(f"Unexpected error in Trivy execution: {str(e)}")
             return self.create_error_result(
-                tool_name=self.name,
-                error=str(e),
-                execution_time=execution_time
+                tool_name=self.name, error=str(e), execution_time=execution_time
             )
 
     async def get_version_info(self) -> Optional[str]:
@@ -485,7 +541,7 @@ class TrivyMCPTool(MCPToolBase):
                 [self.trivy_path, "--version"],
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
             if result.returncode == 0:
                 return result.stdout.strip()
@@ -498,9 +554,11 @@ class TrivyMCPTool(MCPToolBase):
         try:
             logger.info("Updating Trivy vulnerability database...")
             process = await asyncio.create_subprocess_exec(
-                self.trivy_path, "image", "--download-db",
+                self.trivy_path,
+                "image",
+                "--download-db",
                 stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                stderr=asyncio.subprocess.PIPE,
             )
 
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300)
@@ -509,7 +567,7 @@ class TrivyMCPTool(MCPToolBase):
                 logger.info("Trivy database updated successfully")
                 return True
             else:
-                error_msg = stderr.decode('utf-8') if stderr else "Unknown error"
+                error_msg = stderr.decode("utf-8") if stderr else "Unknown error"
                 logger.error(f"Failed to update Trivy database: {error_msg}")
                 return False
 
@@ -527,7 +585,7 @@ class TrivyMCPTool(MCPToolBase):
                 [self.trivy_path, "image", "--help"],
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
             if result.returncode == 0:
                 # 解析帮助信息中的扫描器列表

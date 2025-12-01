@@ -10,7 +10,7 @@ def create_app() -> FastAPI:
         description="基于 LLM Agent 的智能测试平台接入系统 API",
         version="1.0.0",
         docs_url="/api/docs",
-        redoc_url="/api/redoc"
+        redoc_url="/api/redoc",
     )
 
     # Configure CORS

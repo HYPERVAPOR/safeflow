@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class TaskStatus(str, Enum):
@@ -21,6 +22,7 @@ class TaskPriority(str, Enum):
 
 class ExecutionStep(BaseModel):
     """执行步骤"""
+
     step_id: str = Field(..., description="步骤ID")
     name: str = Field(..., description="步骤名称")
     tool_id: str = Field(..., description="使用的工具ID")
@@ -34,11 +36,14 @@ class ExecutionStep(BaseModel):
 
 class TestTask(BaseModel):
     """测试任务"""
+
     task_id: str = Field(..., description="任务ID")
     task_name: str = Field(..., description="任务名称")
     description: str = Field(..., description="任务描述")
     target: str = Field(..., description="测试目标")
-    priority: TaskPriority = Field(default=TaskPriority.MEDIUM, description="任务优先级")
+    priority: TaskPriority = Field(
+        default=TaskPriority.MEDIUM, description="任务优先级"
+    )
     status: TaskStatus = Field(default=TaskStatus.PENDING, description="任务状态")
     execution_plan: List[ExecutionStep] = Field(..., description="执行计划")
     created_by: str = Field(..., description="创建者")
@@ -50,8 +55,11 @@ class TestTask(BaseModel):
 
 class TaskCreateRequest(BaseModel):
     """创建任务请求"""
+
     task_name: str = Field(..., description="任务名称")
     description: str = Field(..., description="任务描述")
     target: str = Field(..., description="测试目标")
-    priority: TaskPriority = Field(default=TaskPriority.MEDIUM, description="任务优先级")
+    priority: TaskPriority = Field(
+        default=TaskPriority.MEDIUM, description="任务优先级"
+    )
     natural_language_request: Optional[str] = Field(None, description="自然语言请求")

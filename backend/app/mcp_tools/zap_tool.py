@@ -5,18 +5,23 @@ Web 应用安全测试工具的 MCP 封装
 
 import asyncio
 import json
+import logging
 import os
 import subprocess
-import tempfile
 import time
 import uuid
 from typing import Any, Dict, List, Optional
+
 import aiohttp
-import logging
 
 from app.core.mcp_base import (
-    MCPToolBase, ToolCapability, ToolParameter, ParameterType,
-    ToolCategory, ExecutionContext, ExecutionResult
+    ExecutionContext,
+    ExecutionResult,
+    MCPToolBase,
+    ParameterType,
+    ToolCapability,
+    ToolCategory,
+    ToolParameter,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,7 +57,9 @@ class ZAPMCPTool(MCPToolBase):
 
         # 检查 Docker
         try:
-            result = subprocess.run(["docker", "--version"], capture_output=True, text=True)
+            result = subprocess.run(
+                ["docker", "--version"], capture_output=True, text=True
+            )
             if result.returncode == 0:
                 return "docker"  # 标识使用 Docker
         except Exception:
@@ -72,7 +79,7 @@ class ZAPMCPTool(MCPToolBase):
                 pattern=r"^https?://.+",
                 min_length=1,
                 max_length=1000,
-                format="url"
+                format="url",
             ),
             ToolParameter(
                 name="scan_type",
@@ -80,7 +87,7 @@ class ZAPMCPTool(MCPToolBase):
                 description="扫描类型",
                 required=False,
                 default="quick",
-                enum=["quick", "active", "passive", "spider", "ajaxspider", "api"]
+                enum=["quick", "active", "passive", "spider", "ajaxspider", "api"],
             ),
             ToolParameter(
                 name="auth_type",
@@ -88,7 +95,16 @@ class ZAPMCPTool(MCPToolBase):
                 description="认证类型",
                 required=False,
                 default="none",
-                enum=["none", "basic", "form", "digest", "ntlm", "cookie", "jwt", "oauth"]
+                enum=[
+                    "none",
+                    "basic",
+                    "form",
+                    "digest",
+                    "ntlm",
+                    "cookie",
+                    "jwt",
+                    "oauth",
+                ],
             ),
             ToolParameter(
                 name="username",
@@ -96,7 +112,7 @@ class ZAPMCPTool(MCPToolBase):
                 description="用户名（用于认证）",
                 required=False,
                 default="",
-                max_length=100
+                max_length=100,
             ),
             ToolParameter(
                 name="password",
@@ -105,7 +121,7 @@ class ZAPMCPTool(MCPToolBase):
                 required=False,
                 default="",
                 max_length=200,
-                format="sensitive"
+                format="sensitive",
             ),
             ToolParameter(
                 name="auth_login_url",
@@ -113,7 +129,7 @@ class ZAPMCPTool(MCPToolBase):
                 description="登录页面 URL（表单认证）",
                 required=False,
                 default="",
-                format="url"
+                format="url",
             ),
             ToolParameter(
                 name="auth_username_field",
@@ -121,7 +137,7 @@ class ZAPMCPTool(MCPToolBase):
                 description="用户名字段名称（表单认证）",
                 required=False,
                 default="username",
-                max_length=50
+                max_length=50,
             ),
             ToolParameter(
                 name="auth_password_field",
@@ -129,21 +145,21 @@ class ZAPMCPTool(MCPToolBase):
                 description="密码字段名称（表单认证）",
                 required=False,
                 default="password",
-                max_length=50
+                max_length=50,
             ),
             ToolParameter(
                 name="include_urls",
                 type=ParameterType.ARRAY,
                 description="要包含的 URL 模式列表",
                 required=False,
-                default=[]
+                default=[],
             ),
             ToolParameter(
                 name="exclude_urls",
                 type=ParameterType.ARRAY,
                 description="要排除的 URL 模式列表",
                 required=False,
-                default=[".*\\.(css|js|png|jpg|jpeg|gif|ico|woff|woff2)$"]
+                default=[".*\\.(css|js|png|jpg|jpeg|gif|ico|woff|woff2)$"],
             ),
             ToolParameter(
                 name="max_depth",
@@ -152,7 +168,7 @@ class ZAPMCPTool(MCPToolBase):
                 required=False,
                 default=5,
                 minimum=1,
-                maximum=10
+                maximum=10,
             ),
             ToolParameter(
                 name="max_children",
@@ -161,7 +177,7 @@ class ZAPMCPTool(MCPToolBase):
                 required=False,
                 default=10,
                 minimum=1,
-                maximum=100
+                maximum=100,
             ),
             ToolParameter(
                 name="attack_strength",
@@ -169,7 +185,7 @@ class ZAPMCPTool(MCPToolBase):
                 description="攻击强度",
                 required=False,
                 default="MEDIUM",
-                enum=["LOW", "MEDIUM", "HIGH", "INSIGHT"]
+                enum=["LOW", "MEDIUM", "HIGH", "INSIGHT"],
             ),
             ToolParameter(
                 name="alert_threshold",
@@ -177,7 +193,7 @@ class ZAPMCPTool(MCPToolBase):
                 description="告警阈值",
                 required=False,
                 default="MEDIUM",
-                enum=["LOW", "MEDIUM", "HIGH"]
+                enum=["LOW", "MEDIUM", "HIGH"],
             ),
             ToolParameter(
                 name="output_format",
@@ -185,7 +201,7 @@ class ZAPMCPTool(MCPToolBase):
                 description="输出格式",
                 required=False,
                 default="json",
-                enum=["json", "html", "xml", "md"]
+                enum=["json", "html", "xml", "md"],
             ),
             ToolParameter(
                 name="timeout",
@@ -194,7 +210,7 @@ class ZAPMCPTool(MCPToolBase):
                 required=False,
                 default=600,
                 minimum=60,
-                maximum=3600
+                maximum=3600,
             ),
             ToolParameter(
                 name="delay_in_seconds",
@@ -203,7 +219,7 @@ class ZAPMCPTool(MCPToolBase):
                 required=False,
                 default=0,
                 minimum=0,
-                maximum=60
+                maximum=60,
             ),
             ToolParameter(
                 name="context_name",
@@ -211,22 +227,22 @@ class ZAPMCPTool(MCPToolBase):
                 description="上下文名称",
                 required=False,
                 default="Default Context",
-                max_length=100
+                max_length=100,
             ),
             ToolParameter(
                 name="use_ajax_spider",
                 type=ParameterType.BOOLEAN,
                 description="是否使用 AJAX Spider",
                 required=False,
-                default=True
+                default=True,
             ),
             ToolParameter(
                 name="enable_api_scan",
                 type=ParameterType.BOOLEAN,
                 description="是否启用 API 扫描",
                 required=False,
-                default=False
-            )
+                default=False,
+            ),
         ]
 
     @property
@@ -247,18 +263,28 @@ class ZAPMCPTool(MCPToolBase):
             homepage="https://www.zaproxy.org/",
             documentation="https://www.zaproxy.org/docs/",
             supported_languages=[
-                "Web Applications", "REST APIs", "GraphQL", "SOAP", "WebSocket"
+                "Web Applications",
+                "REST APIs",
+                "GraphQL",
+                "SOAP",
+                "WebSocket",
             ],
             supported_formats=[
-                "web_applications", "rest_apis", "graphql_endpoints", "web_services"
+                "web_applications",
+                "rest_apis",
+                "graphql_endpoints",
+                "web_services",
             ],
-            output_formats=[
-                "json", "html", "xml", "markdown", "sarif"
-            ],
+            output_formats=["json", "html", "xml", "markdown", "sarif"],
             tags=[
-                "web_security", "penetration_testing", "vulnerability_scanner",
-                "owasp_top_ten", "dast", "security_testing", "api_security"
-            ]
+                "web_security",
+                "penetration_testing",
+                "vulnerability_scanner",
+                "owasp_top_ten",
+                "dast",
+                "security_testing",
+                "api_security",
+            ],
         )
 
     async def validate_args(self, args: Dict[str, Any]) -> bool:
@@ -278,14 +304,18 @@ class ZAPMCPTool(MCPToolBase):
 
             # 验证扫描类型
             if "scan_type" in args:
-                valid_scan_types = [param.enum for param in self.parameters if param.name == "scan_type"][0]
+                valid_scan_types = [
+                    param.enum for param in self.parameters if param.name == "scan_type"
+                ][0]
                 if args["scan_type"] not in valid_scan_types:
                     logger.error(f"Invalid scan type: {args['scan_type']}")
                     return False
 
             # 验证认证类型
             if "auth_type" in args:
-                auth_types = [param.enum for param in self.parameters if param.name == "auth_type"][0]
+                auth_types = [
+                    param.enum for param in self.parameters if param.name == "auth_type"
+                ][0]
                 if args["auth_type"] not in auth_types:
                     logger.error(f"Invalid auth type: {args['auth_type']}")
                     return False
@@ -308,14 +338,22 @@ class ZAPMCPTool(MCPToolBase):
 
             # 验证攻击强度
             if "attack_strength" in args:
-                strengths = [param.enum for param in self.parameters if param.name == "attack_strength"][0]
+                strengths = [
+                    param.enum
+                    for param in self.parameters
+                    if param.name == "attack_strength"
+                ][0]
                 if args["attack_strength"] not in strengths:
                     logger.error(f"Invalid attack strength: {args['attack_strength']}")
                     return False
 
             # 验证告警阈值
             if "alert_threshold" in args:
-                thresholds = [param.enum for param in self.parameters if param.name == "alert_threshold"][0]
+                thresholds = [
+                    param.enum
+                    for param in self.parameters
+                    if param.name == "alert_threshold"
+                ][0]
                 if args["alert_threshold"] not in thresholds:
                     logger.error(f"Invalid alert threshold: {args['alert_threshold']}")
                     return False
@@ -331,7 +369,9 @@ class ZAPMCPTool(MCPToolBase):
         try:
             # 检查 Java 环境
             try:
-                result = subprocess.run(["java", "-version"], capture_output=True, text=True, timeout=5)
+                result = subprocess.run(
+                    ["java", "-version"], capture_output=True, text=True, timeout=5
+                )
                 if result.returncode != 0:
                     logger.error("Java not available for ZAP")
                     return False
@@ -351,7 +391,7 @@ class ZAPMCPTool(MCPToolBase):
                         ["docker", "run", "--rm", "owasp/zap2docker-stable", "--help"],
                         capture_output=True,
                         text=True,
-                        timeout=10
+                        timeout=10,
                     )
                     if result.returncode != 0:
                         logger.error("ZAP Docker image not available")
@@ -378,27 +418,46 @@ class ZAPMCPTool(MCPToolBase):
             if self.zap_path == "docker":
                 # 启动 Docker 版本的 ZAP
                 cmd = [
-                    "docker", "run", "-d", "--name", f"zap-{uuid.uuid4().hex[:8]}",
-                    "-p", f"{self.zap_port}:8080",
+                    "docker",
+                    "run",
+                    "-d",
+                    "--name",
+                    f"zap-{uuid.uuid4().hex[:8]}",
+                    "-p",
+                    f"{self.zap_port}:8080",
                     "owasp/zap2docker-stable",
-                    "zap.sh", "-daemon", "-host", "0.0.0.0", "-port", "8080",
-                    "-config", "api.addrs.addr.name=.*", "-config", "api.addrs.addr.regex=true"
+                    "zap.sh",
+                    "-daemon",
+                    "-host",
+                    "0.0.0.0",
+                    "-port",
+                    "8080",
+                    "-config",
+                    "api.addrs.addr.name=.*",
+                    "-config",
+                    "api.addrs.addr.regex=true",
                 ]
             else:
                 # 启动本地 ZAP
                 cmd = [
-                    "java", "-jar",
+                    "java",
+                    "-jar",
                     os.path.join(os.path.dirname(self.zap_path), "zap-2.16.1.jar"),
-                    "-daemon", "-host", self.zap_host, "-port", str(self.zap_port),
-                    "-config", "api.addrs.addr.name=.*", "-config", "api.addrs.addr.regex=true"
+                    "-daemon",
+                    "-host",
+                    self.zap_host,
+                    "-port",
+                    str(self.zap_port),
+                    "-config",
+                    "api.addrs.addr.name=.*",
+                    "-config",
+                    "api.addrs.addr.regex=true",
                 ]
 
             logger.info(f"Starting ZAP daemon: {' '.join(cmd)}")
 
             self.zap_process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
             # 等待 ZAP 启动
@@ -408,7 +467,7 @@ class ZAPMCPTool(MCPToolBase):
                     async with aiohttp.ClientSession() as session:
                         async with session.get(
                             f"http://{self.zap_host}:{self.zap_port}/JSON/core/view/version/",
-                            timeout=aiohttp.ClientTimeout(total=2)
+                            timeout=aiohttp.ClientTimeout(total=2),
                         ) as response:
                             if response.status == 200:
                                 logger.info("ZAP daemon started successfully")
@@ -435,7 +494,9 @@ class ZAPMCPTool(MCPToolBase):
             except Exception as e:
                 logger.warning(f"Error stopping ZAP daemon: {str(e)}")
 
-    async def execute(self, args: Dict[str, Any], context: ExecutionContext) -> ExecutionResult:
+    async def execute(
+        self, args: Dict[str, Any], context: ExecutionContext
+    ) -> ExecutionResult:
         """执行 ZAP 扫描"""
         start_time = time.time()
 
@@ -445,7 +506,7 @@ class ZAPMCPTool(MCPToolBase):
                 return self.create_error_result(
                     tool_name=self.name,
                     error="Failed to start ZAP daemon",
-                    execution_time=time.time() - start_time
+                    execution_time=time.time() - start_time,
                 )
 
             try:
@@ -461,12 +522,12 @@ class ZAPMCPTool(MCPToolBase):
             logger.error(f"Unexpected error in ZAP execution: {str(e)}")
             await self.stop_zap_daemon()
             return self.create_error_result(
-                tool_name=self.name,
-                error=str(e),
-                execution_time=execution_time
+                tool_name=self.name, error=str(e), execution_time=execution_time
             )
 
-    async def _perform_scan(self, args: Dict[str, Any], context: ExecutionContext) -> ExecutionResult:
+    async def _perform_scan(
+        self, args: Dict[str, Any], context: ExecutionContext
+    ) -> ExecutionResult:
         """执行具体的扫描操作"""
         start_time = time.time()
         target_url = args["target_url"]
@@ -485,22 +546,30 @@ class ZAPMCPTool(MCPToolBase):
                 context_id = await self._create_context(session, args)
 
                 # 启动爬虫
-                scan_id = await self._start_spider(session, target_url, args, context_id)
+                scan_id = await self._start_spider(
+                    session, target_url, args, context_id
+                )
                 if not scan_id:
                     return self.create_error_result(
                         tool_name=self.name,
                         error="Failed to start spider",
-                        execution_time=time.time() - start_time
+                        execution_time=time.time() - start_time,
                     )
 
                 # 等待爬虫完成
-                await self._wait_for_spider_completion(session, scan_id, args.get("timeout", context.timeout))
+                await self._wait_for_spider_completion(
+                    session, scan_id, args.get("timeout", context.timeout)
+                )
 
                 # 启动扫描
                 if scan_type in ["quick", "active"]:
-                    scan_result = await self._start_active_scan(session, target_url, args, context_id)
+                    scan_result = await self._start_active_scan(
+                        session, target_url, args, context_id
+                    )
                     if scan_result:
-                        await self._wait_for_scan_completion(session, scan_result, args.get("timeout", context.timeout))
+                        await self._wait_for_scan_completion(
+                            session, scan_result, args.get("timeout", context.timeout)
+                        )
 
                 # 获取结果
                 results = await self._get_results(session, args)
@@ -512,23 +581,27 @@ class ZAPMCPTool(MCPToolBase):
                     "target_url": target_url,
                     "scan_type": scan_type,
                     "alerts_count": len(results.get("alerts", [])),
-                    "high_risk_alerts": len([a for a in results.get("alerts", []) if a.get("risk") in ["High", "Critical"]])
+                    "high_risk_alerts": len(
+                        [
+                            a
+                            for a in results.get("alerts", [])
+                            if a.get("risk") in ["High", "Critical"]
+                        ]
+                    ),
                 }
 
                 return self.create_success_result(
                     tool_name=self.name,
                     execution_time=execution_time,
                     output=json.dumps(results, indent=2, ensure_ascii=False),
-                    metadata=metadata
+                    metadata=metadata,
                 )
 
         except Exception as e:
             execution_time = time.time() - start_time
             logger.error(f"Error in ZAP scan: {str(e)}")
             return self.create_error_result(
-                tool_name=self.name,
-                error=str(e),
-                execution_time=execution_time
+                tool_name=self.name, error=str(e), execution_time=execution_time
             )
 
     async def _get_api_key(self, session: aiohttp.ClientSession):
@@ -537,7 +610,9 @@ class ZAPMCPTool(MCPToolBase):
             # ZAP 默认不需要 API 密钥，使用空字符串
             self.zap_api_key = ""
 
-    async def _configure_auth(self, session: aiohttp.ClientSession, args: Dict[str, Any]):
+    async def _configure_auth(
+        self, session: aiohttp.ClientSession, args: Dict[str, Any]
+    ):
         """配置认证"""
         auth_type = args.get("auth_type", "none")
         if auth_type == "none":
@@ -547,19 +622,18 @@ class ZAPMCPTool(MCPToolBase):
         # 基础认证、表单认证、JWT 等
         logger.info(f"Configuring authentication: {auth_type}")
 
-    async def _create_context(self, session: aiohttp.ClientSession, args: Dict[str, Any]) -> str:
+    async def _create_context(
+        self, session: aiohttp.ClientSession, args: Dict[str, Any]
+    ) -> str:
         """创建扫描上下文"""
         context_name = args.get("context_name", "Default Context")
 
         try:
-            params = {
-                "contextName": context_name,
-                "apiKey": self.zap_api_key
-            }
+            params = {"contextName": context_name, "apiKey": self.zap_api_key}
 
             async with session.post(
                 f"http://{self.zap_host}:{self.zap_port}/JSON/context/action/newContext/",
-                params=params
+                params=params,
             ) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -570,9 +644,19 @@ class ZAPMCPTool(MCPToolBase):
             logger.warning(f"Failed to create context: {str(e)}")
             return "0"
 
-    async def _start_spider(self, session: aiohttp.ClientSession, target_url: str, args: Dict[str, Any], context_id: str) -> str:
+    async def _start_spider(
+        self,
+        session: aiohttp.ClientSession,
+        target_url: str,
+        args: Dict[str, Any],
+        context_id: str,
+    ) -> str:
         """启动爬虫"""
-        spider_type = "ajaxspider" if args.get("use_ajax_spider", True) and args.get("scan_type") != "api" else "spider"
+        spider_type = (
+            "ajaxspider"
+            if args.get("use_ajax_spider", True) and args.get("scan_type") != "api"
+            else "spider"
+        )
 
         try:
             params = {
@@ -580,7 +664,7 @@ class ZAPMCPTool(MCPToolBase):
                 "maxChildren": args.get("max_children", 10),
                 "recurse": "true",
                 "contextName": args.get("context_name", "Default Context"),
-                "apiKey": self.zap_api_key
+                "apiKey": self.zap_api_key,
             }
 
             if spider_type == "ajaxspider":
@@ -601,7 +685,9 @@ class ZAPMCPTool(MCPToolBase):
             logger.error(f"Error starting spider: {str(e)}")
             return ""
 
-    async def _wait_for_spider_completion(self, session: aiohttp.ClientSession, scan_id: str, timeout: int):
+    async def _wait_for_spider_completion(
+        self, session: aiohttp.ClientSession, scan_id: str, timeout: int
+    ):
         """等待爬虫完成"""
         max_wait = timeout
         wait_time = 0
@@ -612,7 +698,7 @@ class ZAPMCPTool(MCPToolBase):
 
                 async with session.get(
                     f"http://{self.zap_host}:{self.zap_port}/JSON/spider/view/status/",
-                    params=params
+                    params=params,
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
@@ -630,7 +716,13 @@ class ZAPMCPTool(MCPToolBase):
 
         logger.warning(f"Spider scan timed out after {timeout} seconds")
 
-    async def _start_active_scan(self, session: aiohttp.ClientSession, target_url: str, args: Dict[str, Any], context_id: str) -> str:
+    async def _start_active_scan(
+        self,
+        session: aiohttp.ClientSession,
+        target_url: str,
+        args: Dict[str, Any],
+        context_id: str,
+    ) -> str:
         """启动主动扫描"""
         try:
             params = {
@@ -640,12 +732,12 @@ class ZAPMCPTool(MCPToolBase):
                 "policy": "Default Policy",
                 "attackStrength": args.get("attack_strength", "MEDIUM"),
                 "alertThreshold": args.get("alert_threshold", "MEDIUM"),
-                "apiKey": self.zap_api_key
+                "apiKey": self.zap_api_key,
             }
 
             async with session.post(
                 f"http://{self.zap_host}:{self.zap_port}/JSON/ascan/action/scan/",
-                params=params
+                params=params,
             ) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -658,18 +750,19 @@ class ZAPMCPTool(MCPToolBase):
             logger.error(f"Error starting active scan: {str(e)}")
             return ""
 
-    async def _wait_for_scan_completion(self, session: aiohttp.ClientSession, scan_id: str, timeout: int):
+    async def _wait_for_scan_completion(
+        self, session: aiohttp.ClientSession, scan_id: str, timeout: int
+    ):
         """等待扫描完成"""
         max_wait = timeout
         wait_time = 0
 
         while wait_time < max_wait:
             try:
-                params = {"apiKey": self.zap_api_key}
 
                 async with session.get(
                     f"http://{self.zap_host}:{self.zap_port}/JSON/ascan/view/status/",
-                    params={"scanId": scan_id, "apiKey": self.zap_api_key}
+                    params={"scanId": scan_id, "apiKey": self.zap_api_key},
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
@@ -687,19 +780,21 @@ class ZAPMCPTool(MCPToolBase):
 
         logger.warning(f"Active scan timed out after {timeout} seconds")
 
-    async def _get_results(self, session: aiohttp.ClientSession, args: Dict[str, Any]) -> Dict[str, Any]:
+    async def _get_results(
+        self, session: aiohttp.ClientSession, args: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """获取扫描结果"""
         try:
             params = {
                 "baseurl": args["target_url"],
                 "start": "0",
                 "count": "1000",
-                "apiKey": self.zap_api_key
+                "apiKey": self.zap_api_key,
             }
 
             async with session.get(
                 f"http://{self.zap_host}:{self.zap_port}/JSON/core/view/alerts/",
-                params=params
+                params=params,
             ) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -722,7 +817,7 @@ class ZAPMCPTool(MCPToolBase):
                 async with aiohttp.ClientSession() as session:
                     async with session.get(
                         f"http://{self.zap_host}:{self.zap_port}/JSON/core/view/version/",
-                        timeout=aiohttp.ClientTimeout(total=5)
+                        timeout=aiohttp.ClientTimeout(total=5),
                     ) as response:
                         if response.status == 200:
                             data = await response.json()

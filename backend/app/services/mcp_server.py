@@ -6,16 +6,13 @@ SafeFlow MCP 服务器实现
 import asyncio
 import json
 import logging
-from typing import Any, Dict, List, Optional
 import time
+from typing import Any, Dict, List
 
 from mcp.server import Server
-from mcp.types import (
-    Tool, TextContent, CallToolRequest, CallToolResult,
-    ListToolsRequest, ListToolsResult
-)
+from mcp.types import CallToolResult, TextContent, Tool
 
-from app.core.mcp_base import tool_registry, ExecutionContext, ExecutionResult
+from app.core.mcp_base import ExecutionContext, tool_registry
 from app.mcp_tools.semgrep_tool import SemgrepMCPTool
 from app.mcp_tools.trivy_tool import TrivyMCPTool
 from app.mcp_tools.zap_tool import ZAPMCPTool
@@ -47,7 +44,7 @@ class SafeFlowMCPServer:
                 mcp_tool = Tool(
                     name=tool_info["name"],
                     description=tool_info["description"],
-                    inputSchema=tool_info["inputSchema"]
+                    inputSchema=tool_info["inputSchema"],
                 )
                 tools.append(mcp_tool)
 
@@ -61,8 +58,7 @@ class SafeFlowMCPServer:
                 error_msg = f"Tool '{name}' not found. Available tools: {list(self.tools.keys())}"
                 logger.error(error_msg)
                 return CallToolResult(
-                    content=[TextContent(type="text", text=error_msg)],
-                    isError=True
+                    content=[TextContent(type="text", text=error_msg)], isError=True
                 )
 
             tool_instance = self.tools[name]
@@ -76,22 +72,23 @@ class SafeFlowMCPServer:
                 timeout=arguments.get("_timeout", 300),
                 max_memory=arguments.get("_max_memory", "1GB"),
                 enable_network=arguments.get("_enable_network", False),
-                sandbox=arguments.get("_sandbox", True)
+                sandbox=arguments.get("_sandbox", True),
             )
 
             # 移除内部参数
             clean_args = {k: v for k, v in arguments.items() if not k.startswith("_")}
 
             try:
-                logger.info(f"Executing tool '{name}' with args: {list(clean_args.keys())}")
+                logger.info(
+                    f"Executing tool '{name}' with args: {list(clean_args.keys())}"
+                )
 
                 # 准备执行
                 if not await tool_instance.prepare_execution(clean_args, context):
                     error_msg = f"Failed to prepare execution for tool '{name}'"
                     logger.error(error_msg)
                     return CallToolResult(
-                        content=[TextContent(type="text", text=error_msg)],
-                        isError=True
+                        content=[TextContent(type="text", text=error_msg)], isError=True
                     )
 
                 # 执行工具
@@ -105,7 +102,9 @@ class SafeFlowMCPServer:
                     response_text += f"Execution time: {execution_time:.2f} seconds\n"
 
                     if result.metadata:
-                        response_text += f"Metadata: {json.dumps(result.metadata, indent=2)}\n\n"
+                        response_text += (
+                            f"Metadata: {json.dumps(result.metadata, indent=2)}\n\n"
+                        )
 
                     if result.output:
                         response_text += "Output:\n"
@@ -115,11 +114,13 @@ class SafeFlowMCPServer:
                     else:
                         response_text += "Tool completed successfully (no output)"
 
-                    logger.info(f"Tool '{name}' executed successfully in {execution_time:.2f}s")
+                    logger.info(
+                        f"Tool '{name}' executed successfully in {execution_time:.2f}s"
+                    )
 
                     return CallToolResult(
                         content=[TextContent(type="text", text=response_text)],
-                        isError=False
+                        isError=False,
                     )
                 else:
                     response_text = f"❌ Tool '{name}' execution failed\n\n"
@@ -127,13 +128,15 @@ class SafeFlowMCPServer:
                     response_text += f"Error: {result.error}\n"
 
                     if result.metadata:
-                        response_text += f"Metadata: {json.dumps(result.metadata, indent=2)}\n"
+                        response_text += (
+                            f"Metadata: {json.dumps(result.metadata, indent=2)}\n"
+                        )
 
                     logger.error(f"Tool '{name}' failed: {result.error}")
 
                     return CallToolResult(
                         content=[TextContent(type="text", text=response_text)],
-                        isError=True
+                        isError=True,
                     )
 
             except Exception as e:
@@ -141,8 +144,7 @@ class SafeFlowMCPServer:
                 logger.error(error_msg, exc_info=True)
 
                 return CallToolResult(
-                    content=[TextContent(type="text", text=error_msg)],
-                    isError=True
+                    content=[TextContent(type="text", text=error_msg)], isError=True
                 )
 
     def _register_tools(self):
@@ -196,9 +198,11 @@ class SafeFlowMCPServer:
                         logger.warning(f"Tool '{tool_name}' is not available")
                 except Exception as e:
                     unavailable_tools.append(tool_name)
-                    logger.error(f"Error checking availability of tool '{tool_name}': {str(e)}")
+                    logger.error(
+                        f"Error checking availability of tool '{tool_name}': {str(e)}"
+                    )
 
-            logger.info(f"Server initialization completed")
+            logger.info("Server initialization completed")
             logger.info(f"Available tools: {available_tools}")
             logger.info(f"Unavailable tools: {unavailable_tools}")
 
@@ -215,7 +219,7 @@ class SafeFlowMCPServer:
             "version": "1.0.0",
             "description": "MCP server for SafeFlow security testing platform",
             "tools_count": len(self.tools),
-            "tools": list(self.tools.keys())
+            "tools": list(self.tools.keys()),
         }
 
     def get_tool_status(self) -> Dict[str, Any]:
@@ -231,13 +235,10 @@ class SafeFlowMCPServer:
                     "version": capability.version,
                     "description": capability.description,
                     "supported_languages": capability.supported_languages,
-                    "output_formats": capability.output_formats
+                    "output_formats": capability.output_formats,
                 }
             except Exception as e:
-                status[tool_name] = {
-                    "available": False,
-                    "error": str(e)
-                }
+                status[tool_name] = {"available": False, "error": str(e)}
 
         return status
 
@@ -248,7 +249,7 @@ class SafeFlowMCPServer:
         # 清理工具资源
         for tool_name, tool_instance in self.tools.items():
             try:
-                if hasattr(tool_instance, 'cleanup'):
+                if hasattr(tool_instance, "cleanup"):
                     await tool_instance.cleanup()
                 logger.info(f"Cleaned up tool '{tool_name}'")
             except Exception as e:
@@ -293,7 +294,7 @@ if __name__ == "__main__":
     # 配置日志
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     # 运行服务器

@@ -5,6 +5,7 @@ Semgrep MCP 工具实现
 
 import asyncio
 import json
+import logging
 import os
 import subprocess
 import tempfile
@@ -12,10 +13,14 @@ import time
 from typing import Any, Dict, List, Optional
 
 from app.core.mcp_base import (
-    MCPToolBase, ToolCapability, ToolParameter, ParameterType,
-    ToolCategory, ExecutionContext, ExecutionResult
+    ExecutionContext,
+    ExecutionResult,
+    MCPToolBase,
+    ParameterType,
+    ToolCapability,
+    ToolCategory,
+    ToolParameter,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +49,9 @@ class SemgrepMCPTool(MCPToolBase):
 
         # 在 PATH 中查找
         try:
-            result = subprocess.run(["which", "semgrep"], capture_output=True, text=True)
+            result = subprocess.run(
+                ["which", "semgrep"], capture_output=True, text=True
+            )
             if result.returncode == 0:
                 return result.stdout.strip()
         except Exception:
@@ -63,7 +70,7 @@ class SemgrepMCPTool(MCPToolBase):
                 required=True,
                 pattern=r"^[^<>:\"|?*\x00-\x1F]+$",
                 min_length=1,
-                max_length=1000
+                max_length=1000,
             ),
             ToolParameter(
                 name="config",
@@ -71,16 +78,33 @@ class SemgrepMCPTool(MCPToolBase):
                 description="Semgrep规则配置（默认: auto）。可选：'auto'（自动选择）、'p/security-audit'（安全审计）、'p/owasp-top-ten'（OWASP Top 10）、'p/cwe-top-25'（CWE Top 25）、'p/secrets'（敏感信息检测）",
                 required=False,
                 default="auto",
-                enum=["auto", "p/security-audit", "p/owasp-top-ten", "p/cwe-top-25", "p/secrets"],
-                format="semgrep-config"
+                enum=[
+                    "auto",
+                    "p/security-audit",
+                    "p/owasp-top-ten",
+                    "p/cwe-top-25",
+                    "p/secrets",
+                ],
+                format="semgrep-config",
             ),
             ToolParameter(
                 name="language",
                 type=ParameterType.STRING,
                 description="指定编程语言（仅用于文档说明）。Semgrep 会自动检测文件语言，不支持命令行语言过滤。如需过滤特定语言文件，请使用 include 参数，例如：'*.py'",
                 required=False,
-                enum=["python", "javascript", "typescript", "java", "go", "ruby", "php", "c", "cpp", "csharp"],
-                format="language-code"
+                enum=[
+                    "python",
+                    "javascript",
+                    "typescript",
+                    "java",
+                    "go",
+                    "ruby",
+                    "php",
+                    "c",
+                    "cpp",
+                    "csharp",
+                ],
+                format="language-code",
             ),
             ToolParameter(
                 name="severity",
@@ -88,7 +112,7 @@ class SemgrepMCPTool(MCPToolBase):
                 description="最小严重性级别过滤（默认: INFO）。可选：'ERROR'（仅错误）、'WARNING'（警告及以上）、'INFO'（全部）",
                 required=False,
                 default="INFO",
-                enum=["ERROR", "WARNING", "INFO"]
+                enum=["ERROR", "WARNING", "INFO"],
             ),
             ToolParameter(
                 name="output_format",
@@ -96,7 +120,7 @@ class SemgrepMCPTool(MCPToolBase):
                 description="输出格式（默认: json）。推荐使用'json'便于解析，可选'sarif'（标准安全报告格式）、'text'（纯文本）",
                 required=False,
                 default="json",
-                enum=["json", "sarif", "text", "junit-xml"]
+                enum=["json", "sarif", "text", "junit-xml"],
             ),
             ToolParameter(
                 name="max_memory",
@@ -105,7 +129,7 @@ class SemgrepMCPTool(MCPToolBase):
                 required=False,
                 default=1024,
                 minimum=256,
-                maximum=8192
+                maximum=8192,
             ),
             ToolParameter(
                 name="timeout",
@@ -114,29 +138,29 @@ class SemgrepMCPTool(MCPToolBase):
                 required=False,
                 default=300,
                 minimum=10,
-                maximum=3600
+                maximum=3600,
             ),
             ToolParameter(
                 name="exclude",
                 type=ParameterType.ARRAY,
                 description="要排除的文件模式列表（可选，使用 Glob 模式）。例如：'*.test.js'、'**/test_*.py'、'node_modules'、'__pycache__'",
                 required=False,
-                default=["*.test.js", "*.spec.ts", "node_modules", "vendor", ".git"]
+                default=["*.test.js", "*.spec.ts", "node_modules", "vendor", ".git"],
             ),
             ToolParameter(
                 name="include",
                 type=ParameterType.ARRAY,
                 description="要包含的文件模式列表（可选，使用 Glob 模式）。例如：'*.py'（仅Python文件）、'src/**'（src目录下所有文件）、'**/*.js'（所有JS文件）",
                 required=False,
-                default=[]
+                default=[],
             ),
             ToolParameter(
                 name="enable_metrics",
                 type=ParameterType.BOOLEAN,
                 description="是否启用性能指标收集",
                 required=False,
-                default=True
-            )
+                default=True,
+            ),
         ]
 
     @property
@@ -154,15 +178,32 @@ class SemgrepMCPTool(MCPToolBase):
             homepage="https://semgrep.dev",
             documentation="https://semgrep.dev/docs/",
             supported_languages=[
-                "Python", "JavaScript", "TypeScript", "Java", "Go",
-                "Ruby", "PHP", "C", "C++", "C#", "Rust", "Kotlin", "Scala"
+                "Python",
+                "JavaScript",
+                "TypeScript",
+                "Java",
+                "Go",
+                "Ruby",
+                "PHP",
+                "C",
+                "C++",
+                "C#",
+                "Rust",
+                "Kotlin",
+                "Scala",
             ],
             supported_formats=["source_code", "text_files"],
             output_formats=["json", "sarif", "text", "junit-xml"],
             tags=[
-                "static_analysis", "security", "sast", "vulnerability_detection",
-                "code_quality", "owasp", "cwe", "multi_language"
-            ]
+                "static_analysis",
+                "security",
+                "sast",
+                "vulnerability_detection",
+                "code_quality",
+                "owasp",
+                "cwe",
+                "multi_language",
+            ],
         )
 
     async def validate_args(self, args: Dict[str, Any]) -> bool:
@@ -183,8 +224,10 @@ class SemgrepMCPTool(MCPToolBase):
                 return False
 
             # 检查路径是否包含危险字符
-            if any(char in target_path for char in ['<', '>', '|', '&', ';', '`', '$']):
-                logger.error(f"Target path contains dangerous characters: {target_path}")
+            if any(char in target_path for char in ["<", ">", "|", "&", ";", "`", "$"]):
+                logger.error(
+                    f"Target path contains dangerous characters: {target_path}"
+                )
                 return False
 
             # 验证配置参数
@@ -196,8 +239,14 @@ class SemgrepMCPTool(MCPToolBase):
 
             # 验证语言参数
             if "language" in args:
-                languages = args["language"].split(",") if isinstance(args["language"], str) else args["language"]
-                valid_languages = [param.enum for param in self.parameters if param.name == "language"][0]
+                languages = (
+                    args["language"].split(",")
+                    if isinstance(args["language"], str)
+                    else args["language"]
+                )
+                valid_languages = [
+                    param.enum for param in self.parameters if param.name == "language"
+                ][0]
                 for lang in languages:
                     if lang.strip() not in valid_languages:
                         logger.error(f"Invalid language: {lang}")
@@ -205,7 +254,11 @@ class SemgrepMCPTool(MCPToolBase):
 
             # 验证输出格式
             if "output_format" in args:
-                valid_formats = [param.enum for param in self.parameters if param.name == "output_format"][0]
+                valid_formats = [
+                    param.enum
+                    for param in self.parameters
+                    if param.name == "output_format"
+                ][0]
                 if args["output_format"] not in valid_formats:
                     logger.error(f"Invalid output format: {args['output_format']}")
                     return False
@@ -228,7 +281,7 @@ class SemgrepMCPTool(MCPToolBase):
                 [self.semgrep_path, "--version"],
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
             if result.returncode != 0:
                 logger.error(f"Semgrep version check failed: {result.stderr}")
@@ -245,7 +298,9 @@ class SemgrepMCPTool(MCPToolBase):
             logger.error(f"Semgrep availability check failed: {str(e)}")
             return False
 
-    async def execute(self, args: Dict[str, Any], context: ExecutionContext) -> ExecutionResult:
+    async def execute(
+        self, args: Dict[str, Any], context: ExecutionContext
+    ) -> ExecutionResult:
         """执行 Semgrep 扫描"""
         start_time = time.time()
 
@@ -303,7 +358,9 @@ class SemgrepMCPTool(MCPToolBase):
             logger.info(f"Executing Semgrep: {' '.join(cmd)}")
 
             # 创建临时输出文件
-            with tempfile.NamedTemporaryFile(mode='w', suffix=f'.{output_format}', delete=False) as tmp_file:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=f".{output_format}", delete=False
+            ) as tmp_file:
                 output_file = tmp_file.name
 
             # 重定向输出
@@ -314,13 +371,15 @@ class SemgrepMCPTool(MCPToolBase):
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                cwd=context.workspace_dir or os.getcwd()
+                cwd=context.workspace_dir or os.getcwd(),
             )
 
             # 设置超时
             timeout = args.get("timeout", context.timeout)
             try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
+                stdout, stderr = await asyncio.wait_for(
+                    process.communicate(), timeout=timeout
+                )
             except asyncio.TimeoutError:
                 process.kill()
                 await process.wait()
@@ -328,7 +387,7 @@ class SemgrepMCPTool(MCPToolBase):
                 return self.create_error_result(
                     tool_name=self.name,
                     error=f"Semgrep execution timed out after {timeout} seconds",
-                    execution_time=execution_time
+                    execution_time=execution_time,
                 )
 
             execution_time = time.time() - start_time
@@ -337,7 +396,7 @@ class SemgrepMCPTool(MCPToolBase):
             output_content = None
             if os.path.exists(output_file):
                 try:
-                    with open(output_file, 'r', encoding='utf-8') as f:
+                    with open(output_file, "r", encoding="utf-8") as f:
                         output_content = f.read()
                 except Exception as e:
                     logger.warning(f"Failed to read output file: {str(e)}")
@@ -350,12 +409,10 @@ class SemgrepMCPTool(MCPToolBase):
 
             # 检查执行结果
             if process.returncode != 0:
-                error_msg = stderr.decode('utf-8') if stderr else "Unknown error"
+                error_msg = stderr.decode("utf-8") if stderr else "Unknown error"
                 logger.error(f"Semgrep execution failed: {error_msg}")
                 return self.create_error_result(
-                    tool_name=self.name,
-                    error=error_msg,
-                    execution_time=execution_time
+                    tool_name=self.name, error=error_msg, execution_time=execution_time
                 )
 
             # 解析结果统计
@@ -364,10 +421,14 @@ class SemgrepMCPTool(MCPToolBase):
                 try:
                     result_data = json.loads(output_content)
                     metadata = {
-                        "rules_run": result_data.get("paths", {}).get("scanned_files_count", 0),
-                        "files_scanned": len(result_data.get("paths", {}).get("scanned", [])),
+                        "rules_run": result_data.get("paths", {}).get(
+                            "scanned_files_count", 0
+                        ),
+                        "files_scanned": len(
+                            result_data.get("paths", {}).get("scanned", [])
+                        ),
                         "findings_count": len(result_data.get("results", [])),
-                        "version": result_data.get("version", "unknown")
+                        "version": result_data.get("version", "unknown"),
                     }
                 except Exception as e:
                     logger.warning(f"Failed to parse JSON output: {str(e)}")
@@ -378,16 +439,14 @@ class SemgrepMCPTool(MCPToolBase):
                 tool_name=self.name,
                 execution_time=execution_time,
                 output=output_content,
-                metadata=metadata
+                metadata=metadata,
             )
 
         except Exception as e:
             execution_time = time.time() - start_time
             logger.error(f"Unexpected error in Semgrep execution: {str(e)}")
             return self.create_error_result(
-                tool_name=self.name,
-                error=str(e),
-                execution_time=execution_time
+                tool_name=self.name, error=str(e), execution_time=execution_time
             )
 
     async def get_version_info(self) -> Optional[str]:
@@ -397,7 +456,7 @@ class SemgrepMCPTool(MCPToolBase):
                 [self.semgrep_path, "--version"],
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
             if result.returncode == 0:
                 return result.stdout.strip()
@@ -412,14 +471,14 @@ class SemgrepMCPTool(MCPToolBase):
                 [self.semgrep_path, "--list-configs"],
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
             if result.returncode == 0:
                 # 解析配置列表
                 configs = []
-                for line in result.stdout.split('\n'):
+                for line in result.stdout.split("\n"):
                     line = line.strip()
-                    if line and not line.startswith('#'):
+                    if line and not line.startswith("#"):
                         configs.append(line)
                 return configs
             return []

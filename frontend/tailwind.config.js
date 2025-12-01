@@ -9,46 +9,56 @@ module.exports = {
     extend: {
       fontFamily: {
         'sans': [
-          'Inter',
+          '"Plus Jakarta Sans"',
           '-apple-system',
           'BlinkMacSystemFont',
           '"Segoe UI"',
           'Roboto',
           '"Helvetica Neue"',
           'Arial',
-          '"Noto Sans"',
           'sans-serif',
-          '"Apple Color Emoji"',
-          '"Segoe UI Emoji"',
-          '"Segoe UI Symbol"',
-          '"Noto Color Emoji"',
-          'PingFang SC',
-          'Microsoft YaHei',
         ],
         'mono': ['JetBrains Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace'],
       },
       colors: {
-        // SafeFlow 深色主题配色方案
-        'safeflow': {
-          // 背景色系
-          'bg-primary': '#0F172A',      // 主界面和内容区域的深色背景
-          'bg-secondary': '#1E293B',    // 侧边栏、卡片容器或分割区域的深色背景
-          'bg-card': '#334155',         // 卡片、弹出框、输入框的背景色
-          'bg-tertiary': '#475569',     // 悬停状态背景色
-          // 边框和分割线
-          'border': '#475569',          // 分割线、输入框边框
-          'hover': '#475569',           // 按钮、卡片、列表项的悬停背景色
-          // 强调色 - 现代青绿色
-          'accent': '#14B8A6',          // 主要操作按钮、选中 Tab、高亮文本、链接
-          'accent-hover': '#0D9488',    // 强调色悬停状态（略微加深）
-          // 文本色系
-          'text-primary': '#F1F5F9',    // 主要正文、标题、最重要的信息
-          'text-secondary': '#CBD5E1',  // 次要信息、描述文本、提示信息
-          'text-tertiary': '#94A3B8',   // 辅助文本、版权声明、图标默认色
-          // 状态色
-          'success': '#22C55E',         // 成功通知、状态指示
-          'warning': '#F59E0B',         // 警告信息、需要注意的状态
-          'error': '#EF4444',           // 错误信息、删除操作按钮
+        // Professional Developer Theme - Soft Gray Palette
+        'dev': {
+          // Background Colors - Soft Gray to Black
+          'bg-primary': '#1A1A1A',      // Main background - soft black
+          'bg-secondary': '#2A2A2A',    // Secondary background - medium gray
+          'bg-tertiary': '#3A3A3A',     // Tertiary background - light gray
+          'bg-overlay': '#252525',      // Overlay/panel background
+          'bg-surface': '#404040',      // Surface/interactive element background
+          // Accent Colors - Subtle Blue/Gray
+          'accent': '#6B7280',          // Primary accent - muted blue-gray
+          'accent-hover': '#9CA3AF',    // Accent hover state - lighter gray
+          'accent-subtle': 'rgba(107, 114, 128, 0.15)', // Subtle accent background
+          'accent-subtle-hover': 'rgba(107, 114, 128, 0.25)', // Subtle accent hover
+          // Text Colors - Enhanced Gray Hierarchy
+          'text-primary': '#D1D5DB',    // Primary text - medium gray (more gray)
+          'text-secondary': '#9CA3AF',  // Secondary text - muted gray
+          'text-muted': '#6B7280',      // Muted text - dark gray
+          'text-subtle': '#4B5563',     // Subtle text/divider - darker gray
+          'text-faint': '#374151',      // Very faint text - darkest gray
+          // Border & Interactive Colors - Multi-level Gray Hierarchy
+          'border': '#2D2D2D',          // Primary border - very dark gray (main borders)
+          'border-secondary': '#374151', // Secondary border - dark gray (cards)
+          'border-tertiary': '#4B5563', // Tertiary border - medium-dark gray (active states)
+          'border-quaternary': '#6B7280', // Quaternary border - medium gray (hover states)
+          'border-subtle': '#1A1A1A',   // Subtle border - almost black (dividers)
+          'border-accent': '#404040',   // Accent border - light gray (important elements)
+          'border-hover': '#5A5A5A',    // Border on hover state - medium gray
+          'hover': '#374151',           // Hover background - dark gray
+          'active': '#4B5563',          // Active/selected state
+          // Status Colors - Subtle Professional Palette
+          'success': '#34D399',         // Success state - emerald green
+          'success-subtle': 'rgba(52, 211, 153, 0.15)', // Success background
+          'error': '#F87171',           // Error state - soft red
+          'error-subtle': 'rgba(248, 113, 113, 0.15)', // Error background
+          'warning': '#FBBF24',         // Warning state - amber
+          'warning-subtle': 'rgba(251, 191, 36, 0.15)', // Warning background
+          'info': '#60A5FA',            // Info state - soft blue
+          'info-subtle': 'rgba(96, 165, 250, 0.15)', // Info background
         }
       },
       fontSize: {

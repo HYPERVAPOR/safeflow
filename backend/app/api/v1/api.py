@@ -20,8 +20,8 @@ async def api_root():
             "tools": "/tools/ - 工具管理 (已迁移到 MCP)",
             "tasks": "/tasks/ - 任务管理 (开发中)",
             "health": "/health - 健康检查",
-            "docs": "/api/docs - API 文档"
-        }
+            "docs": "/api/docs - API 文档",
+        },
     }
 
 
@@ -30,38 +30,33 @@ async def get_tools_legacy():
     """获取所有注册的工具列表 (Legacy API)"""
     try:
         from app.services.mcp_service import mcp_service
+
         await mcp_service.initialize()
         tools = await mcp_service.list_tools()
         return {
             "tools": tools,
             "count": len(tools),
-            "message": "Legacy Tools API - 推荐使用 /mcp/tools"
+            "message": "Legacy Tools API - 推荐使用 /mcp/tools",
         }
     except Exception as e:
         return {
             "tools": [],
             "count": 0,
             "error": str(e),
-            "message": "Tools endpoint error - 推荐使用 /mcp/tools"
+            "message": "Tools endpoint error - 推荐使用 /mcp/tools",
         }
 
 
 @api_router.post("/tasks")
 async def create_task():
     """创建新的测试任务"""
-    return {
-        "task_id": "placeholder",
-        "message": "Task creation endpoint - 待实现"
-    }
+    return {"task_id": "placeholder", "message": "Task creation endpoint - 待实现"}
 
 
 @api_router.get("/tasks/{task_id}")
 async def get_task(task_id: str):
     """获取指定任务详情"""
-    return {
-        "task_id": task_id,
-        "message": "Task details endpoint - 待实现"
-    }
+    return {"task_id": task_id, "message": "Task details endpoint - 待实现"}
 
 
 @api_router.get("/mcp-migration")
@@ -77,12 +72,12 @@ async def mcp_migration_info():
             "search_tools": "/mcp/search?q=keyword - 搜索工具",
             "recommendations": "/mcp/recommendations - 获取推荐工具",
             "categories": "/mcp/categories - 获取工具分类",
-            "status": "/mcp/status - 获取服务状态"
+            "status": "/mcp/status - 获取服务状态",
         },
         "available_tools": [
             "semgrep - 静态代码分析",
             "trivy - 漏洞扫描",
-            "owasp_zap - Web 应用安全测试"
+            "owasp_zap - Web 应用安全测试",
         ],
         "benefits": [
             "统一的工具接口",
@@ -90,7 +85,7 @@ async def mcp_migration_info():
             "丰富的元数据",
             "标准化的输出格式",
             "更好的错误处理",
-            "LLM 友好的工具描述"
+            "LLM 友好的工具描述",
         ],
-        "migration_status": "completed"
+        "migration_status": "completed",
     }

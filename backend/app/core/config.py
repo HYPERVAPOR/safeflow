@@ -1,4 +1,5 @@
 from typing import List
+
 from pydantic_settings import BaseSettings
 
 
@@ -24,11 +25,12 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+
         # Special handling for list field
         @classmethod
         def parse_env_var(cls, field_name: str, raw_val: str):
-            if field_name == 'cors_origins':
-                return [x.strip() for x in raw_val.split(',')]
+            if field_name == "cors_origins":
+                return [x.strip() for x in raw_val.split(",")]
             return cls.json_loads(raw_val)
 
 

@@ -46,6 +46,11 @@ node_modules/
 tmp/
 temp/
 
+# Backup files
+*.backup
+*.bak
+*.old
+
 # ====== Backend (Python/UV) ======
 # Byte-compiled / optimized / DLL files
 __pycache__/

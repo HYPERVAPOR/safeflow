@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
 from enum import Enum
+from typing import Any, Dict, List
+
+from pydantic import BaseModel, Field
 
 
 class ToolStatus(str, Enum):
@@ -11,6 +12,7 @@ class ToolStatus(str, Enum):
 
 class ToolCapability(BaseModel):
     """工具能力声明"""
+
     name: str = Field(..., description="能力名称")
     description: str = Field(..., description="能力描述")
     input_schema: Dict[str, Any] = Field(..., description="输入参数结构")
@@ -19,6 +21,7 @@ class ToolCapability(BaseModel):
 
 class ToolRegistration(BaseModel):
     """工具注册信息"""
+
     tool_id: str = Field(..., description="工具唯一标识")
     name: str = Field(..., description="工具名称")
     description: str = Field(..., description="工具描述")
@@ -31,6 +34,7 @@ class ToolRegistration(BaseModel):
 
 class ToolInfo(BaseModel):
     """工具信息"""
+
     tool_id: str
     name: str
     description: str

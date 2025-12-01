@@ -4,7 +4,6 @@ MCP 服务集成
 """
 
 import asyncio
-import json
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -18,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 class ToolExecutionRequest(BaseModel):
     """工具执行请求"""
+
     tool_name: str = Field(..., description="工具名称")
     arguments: Dict[str, Any] = Field(..., description="执行参数")
     user_id: Optional[str] = Field(None, description="用户ID")
@@ -29,6 +29,7 @@ class ToolExecutionRequest(BaseModel):
 
 class ToolExecutionResponse(BaseModel):
     """工具执行响应"""
+
     success: bool = Field(..., description="是否成功")
     tool_name: str = Field(..., description="工具名称")
     execution_time: float = Field(..., description="执行时间(秒)")
@@ -52,7 +53,9 @@ class MCPService:
     async def list_tools(self) -> List[Dict[str, Any]]:
         """列出所有可用工具"""
         if not await self.initialize():
-            raise HTTPException(status_code=500, detail="Failed to initialize MCP service")
+            raise HTTPException(
+                status_code=500, detail="Failed to initialize MCP service"
+            )
 
         try:
             tools = []
@@ -63,12 +66,16 @@ class MCPService:
             return tools
         except Exception as e:
             logger.error(f"Error listing tools: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Failed to list tools: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to list tools: {str(e)}"
+            )
 
     async def get_tool_info(self, tool_name: str) -> Dict[str, Any]:
         """获取指定工具的详细信息"""
         if not await self.initialize():
-            raise HTTPException(status_code=500, detail="Failed to initialize MCP service")
+            raise HTTPException(
+                status_code=500, detail="Failed to initialize MCP service"
+            )
 
         if tool_name not in mcp_server.tools:
             raise HTTPException(status_code=404, detail=f"Tool '{tool_name}' not found")
@@ -87,25 +94,36 @@ class MCPService:
                 if version_info:
                     tool_info["version_info"] = version_info
             except Exception as e:
-                logger.warning(f"Failed to get version info for '{tool_name}': {str(e)}")
+                logger.warning(
+                    f"Failed to get version info for '{tool_name}': {str(e)}"
+                )
 
             return tool_info
         except Exception as e:
             logger.error(f"Error getting tool info for '{tool_name}': {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Failed to get tool info: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to get tool info: {str(e)}"
+            )
 
-    async def execute_tool(self, request: ToolExecutionRequest) -> ToolExecutionResponse:
+    async def execute_tool(
+        self, request: ToolExecutionRequest
+    ) -> ToolExecutionResponse:
         """执行指定工具"""
         if not await self.initialize():
-            raise HTTPException(status_code=500, detail="Failed to initialize MCP service")
+            raise HTTPException(
+                status_code=500, detail="Failed to initialize MCP service"
+            )
 
         if request.tool_name not in mcp_server.tools:
-            raise HTTPException(status_code=404, detail=f"Tool '{request.tool_name}' not found")
+            raise HTTPException(
+                status_code=404, detail=f"Tool '{request.tool_name}' not found"
+            )
 
         tool_instance = mcp_server.tools[request.tool_name]
 
         # 创建执行上下文
         from app.core.mcp_base import ExecutionContext
+
         context = ExecutionContext(
             user_id=request.user_id,
             session_id=request.session_id,
@@ -113,7 +131,7 @@ class MCPService:
             workspace_dir=request.workspace_dir,
             timeout=request.timeout,
             enable_network=request.enable_network,
-            sandbox=True
+            sandbox=True,
         )
 
         try:
@@ -121,18 +139,18 @@ class MCPService:
             if not await tool_instance.check_availability():
                 raise HTTPException(
                     status_code=503,
-                    detail=f"Tool '{request.tool_name}' is not available"
+                    detail=f"Tool '{request.tool_name}' is not available",
                 )
 
             # 验证参数
             if not await tool_instance.validate_args(request.arguments):
                 raise HTTPException(
-                    status_code=400,
-                    detail="Invalid arguments for tool execution"
+                    status_code=400, detail="Invalid arguments for tool execution"
                 )
 
             # 执行工具
             import time
+
             start_time = time.time()
 
             result = await tool_instance.execute(request.arguments, context)
@@ -146,13 +164,12 @@ class MCPService:
                 execution_time=execution_time,
                 output=result.output,
                 metadata=result.metadata,
-                error=result.error
+                error=result.error,
             )
 
             if not result.success:
                 raise HTTPException(
-                    status_code=500,
-                    detail=f"Tool execution failed: {result.error}"
+                    status_code=500, detail=f"Tool execution failed: {result.error}"
                 )
 
             return response
@@ -160,10 +177,12 @@ class MCPService:
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Error executing tool '{request.tool_name}': {str(e)}", exc_info=True)
+            logger.error(
+                f"Error executing tool '{request.tool_name}': {str(e)}", exc_info=True
+            )
             raise HTTPException(
                 status_code=500,
-                detail=f"Unexpected error during tool execution: {str(e)}"
+                detail=f"Unexpected error during tool execution: {str(e)}",
             )
 
     async def get_server_status(self) -> Dict[str, Any]:
@@ -175,14 +194,16 @@ class MCPService:
             tool_status = mcp_server.get_tool_status()
 
             # 统计可用工具数量
-            available_count = sum(1 for status in tool_status.values() if status.get("available", False))
+            available_count = sum(
+                1 for status in tool_status.values() if status.get("available", False)
+            )
 
             return {
                 **server_info,
                 "initialized": self.initialized,
                 "available_tools_count": available_count,
                 "total_tools_count": len(tool_status),
-                "tools": tool_status
+                "tools": tool_status,
             }
         except Exception as e:
             logger.error(f"Error getting server status: {str(e)}")
@@ -190,10 +211,12 @@ class MCPService:
                 "initialized": False,
                 "error": str(e),
                 "available_tools_count": 0,
-                "total_tools_count": 0
+                "total_tools_count": 0,
             }
 
-    async def validate_tool_args(self, tool_name: str, arguments: Dict[str, Any]) -> bool:
+    async def validate_tool_args(
+        self, tool_name: str, arguments: Dict[str, Any]
+    ) -> bool:
         """验证工具参数"""
         if not await self.initialize():
             return False
@@ -207,7 +230,9 @@ class MCPService:
     async def get_tool_categories(self) -> Dict[str, List[str]]:
         """获取按分类组织的工具列表"""
         if not await self.initialize():
-            raise HTTPException(status_code=500, detail="Failed to initialize MCP service")
+            raise HTTPException(
+                status_code=500, detail="Failed to initialize MCP service"
+            )
 
         categories = {}
         for tool_name, tool_instance in mcp_server.tools.items():
@@ -221,7 +246,9 @@ class MCPService:
     async def search_tools(self, query: str) -> List[Dict[str, Any]]:
         """搜索工具"""
         if not await self.initialize():
-            raise HTTPException(status_code=500, detail="Failed to initialize MCP service")
+            raise HTTPException(
+                status_code=500, detail="Failed to initialize MCP service"
+            )
 
         results = []
         query_lower = query.lower()
@@ -232,11 +259,13 @@ class MCPService:
             # 搜索工具名称、描述、标签
             capability = tool_info.get("capability", {})
             tags = capability.get("tags", [])
-            searchable_text = " ".join([
-                tool_name.lower(),
-                tool_info.get("description", "").lower(),
-                " ".join(tags).lower()
-            ])
+            searchable_text = " ".join(
+                [
+                    tool_name.lower(),
+                    tool_info.get("description", "").lower(),
+                    " ".join(tags).lower(),
+                ]
+            )
 
             if query_lower in searchable_text:
                 # 添加可用性检查
@@ -246,10 +275,14 @@ class MCPService:
 
         return results
 
-    async def get_recommended_tools(self, project_type: str, languages: List[str]) -> List[Dict[str, Any]]:
+    async def get_recommended_tools(
+        self, project_type: str, languages: List[str]
+    ) -> List[Dict[str, Any]]:
         """获取推荐工具"""
         if not await self.initialize():
-            raise HTTPException(status_code=500, detail="Failed to initialize MCP service")
+            raise HTTPException(
+                status_code=500, detail="Failed to initialize MCP service"
+            )
 
         recommendations = []
 
@@ -258,17 +291,30 @@ class MCPService:
             tool_info = tool_instance.get_tool_info()
 
             # 检查语言支持
-            language_match = any(lang in capability.supported_languages for lang in languages)
+            language_match = any(
+                lang in capability.supported_languages for lang in languages
+            )
 
             # 检查项目类型匹配
             category_match = False
-            if project_type == "web_application" and capability.category.value in ["web_security", "static_analysis"]:
+            if project_type == "web_application" and capability.category.value in [
+                "web_security",
+                "static_analysis",
+            ]:
                 category_match = True
-            elif project_type == "container" and capability.category.value in ["dependency_analysis"]:
+            elif project_type == "container" and capability.category.value in [
+                "dependency_analysis"
+            ]:
                 category_match = True
-            elif project_type == "api" and capability.category.value in ["web_security", "static_analysis"]:
+            elif project_type == "api" and capability.category.value in [
+                "web_security",
+                "static_analysis",
+            ]:
                 category_match = True
-            elif project_type == "mobile" and capability.category.value == "static_analysis":
+            elif (
+                project_type == "mobile"
+                and capability.category.value == "static_analysis"
+            ):
                 category_match = True
             else:
                 category_match = True  # 默认推荐
@@ -280,9 +326,13 @@ class MCPService:
                     tool_info["available"] = availability
                     tool_info["recommendation_reason"] = []
                     if language_match:
-                        tool_info["recommendation_reason"].append(f"Supports language: {', '.join([lang for lang in languages if lang in capability.supported_languages])}")
+                        tool_info["recommendation_reason"].append(
+                            f"Supports language: {', '.join([lang for lang in languages if lang in capability.supported_languages])}"
+                        )
                     if category_match:
-                        tool_info["recommendation_reason"].append(f"Suitable for {project_type}")
+                        tool_info["recommendation_reason"].append(
+                            f"Suitable for {project_type}"
+                        )
 
                     recommendations.append(tool_info)
 

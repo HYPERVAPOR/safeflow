@@ -6,13 +6,11 @@ MCP 工具管理 API 端点
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, BackgroundTasks, Depends, Body
+from fastapi import APIRouter, BackgroundTasks, Body, HTTPException, Query
 from fastapi.responses import JSONResponse
 
-from app.services.mcp_service import (
-    mcp_service, ToolExecutionRequest, ToolExecutionResponse
-)
 from app.core.mcp_base import ToolCategory
+from app.services.mcp_service import ToolExecutionRequest, mcp_service
 
 logger = logging.getLogger(__name__)
 
@@ -32,13 +30,15 @@ async def get_mcp_status():
         return JSONResponse(content=status)
     except Exception as e:
         logger.error(f"Error getting MCP status: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to get MCP status: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get MCP status: {str(e)}"
+        )
 
 
 @router.get("/tools", summary="列出所有可用工具")
 async def list_tools(
     category: Optional[str] = Query(None, description="按分类过滤工具"),
-    available_only: bool = Query(True, description="仅显示可用工具")
+    available_only: bool = Query(True, description="仅显示可用工具"),
 ):
     """
     获取所有已注册的 MCP 工具列表
@@ -66,12 +66,14 @@ async def list_tools(
 
             filtered_tools.append(tool)
 
-        return JSONResponse(content={
-            "tools": filtered_tools,
-            "total_count": len(filtered_tools),
-            "category_filter": category,
-            "available_only": available_only
-        })
+        return JSONResponse(
+            content={
+                "tools": filtered_tools,
+                "total_count": len(filtered_tools),
+                "category_filter": category,
+                "available_only": available_only,
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error listing tools: {str(e)}")
@@ -96,14 +98,14 @@ async def get_tool_info(tool_name: str):
         raise
     except Exception as e:
         logger.error(f"Error getting tool info for '{tool_name}': {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to get tool info: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get tool info: {str(e)}"
+        )
 
 
 @router.post("/tools/{tool_name}/execute", summary="执行指定工具")
 async def execute_tool(
-    tool_name: str,
-    request: ToolExecutionRequest,
-    background_tasks: BackgroundTasks
+    tool_name: str, request: ToolExecutionRequest, background_tasks: BackgroundTasks
 ):
     """
     执行指定的安全工具
@@ -120,7 +122,7 @@ async def execute_tool(
         if tool_name != request.tool_name:
             raise HTTPException(
                 status_code=400,
-                detail=f"Tool name mismatch: URL parameter '{tool_name}' vs request body '{request.tool_name}'"
+                detail=f"Tool name mismatch: URL parameter '{tool_name}' vs request body '{request.tool_name}'",
             )
 
         # 执行工具
@@ -133,16 +135,12 @@ async def execute_tool(
     except Exception as e:
         logger.error(f"Error executing tool '{tool_name}': {str(e)}", exc_info=True)
         raise HTTPException(
-            status_code=500,
-            detail=f"Unexpected error during tool execution: {str(e)}"
+            status_code=500, detail=f"Unexpected error during tool execution: {str(e)}"
         )
 
 
 @router.post("/tools/{tool_name}/validate", summary="验证工具参数")
-async def validate_tool_arguments(
-    tool_name: str,
-    arguments: dict = Body(...)
-):
+async def validate_tool_arguments(tool_name: str, arguments: dict = Body(...)):
     """
     验证指定工具的参数是否正确
 
@@ -155,11 +153,9 @@ async def validate_tool_arguments(
     """
     try:
         is_valid = await mcp_service.validate_tool_args(tool_name, arguments)
-        return JSONResponse(content={
-            "tool_name": tool_name,
-            "valid": is_valid,
-            "arguments": arguments
-        })
+        return JSONResponse(
+            content={"tool_name": tool_name, "valid": is_valid, "arguments": arguments}
+        )
     except Exception as e:
         logger.error(f"Error validating arguments for tool '{tool_name}': {str(e)}")
         return JSONResponse(
@@ -167,9 +163,9 @@ async def validate_tool_arguments(
                 "tool_name": tool_name,
                 "valid": False,
                 "error": str(e),
-                "arguments": arguments
+                "arguments": arguments,
             },
-            status_code=400
+            status_code=400,
         )
 
 
@@ -186,13 +182,15 @@ async def get_tool_categories():
         return JSONResponse(content=categories)
     except Exception as e:
         logger.error(f"Error getting tool categories: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to get tool categories: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get tool categories: {str(e)}"
+        )
 
 
 @router.get("/search", summary="搜索工具")
 async def search_tools(
     q: str = Query(..., min_length=2, description="搜索关键词"),
-    available_only: bool = Query(True, description="仅搜索可用工具")
+    available_only: bool = Query(True, description="仅搜索可用工具"),
 ):
     """
     根据关键词搜索工具
@@ -211,12 +209,14 @@ async def search_tools(
         if available_only:
             results = [tool for tool in results if tool.get("available", True)]
 
-        return JSONResponse(content={
-            "query": q,
-            "results": results,
-            "count": len(results),
-            "available_only": available_only
-        })
+        return JSONResponse(
+            content={
+                "query": q,
+                "results": results,
+                "count": len(results),
+                "available_only": available_only,
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error searching tools: {str(e)}")
@@ -226,7 +226,7 @@ async def search_tools(
 @router.post("/recommendations", summary="获取工具推荐")
 async def get_tool_recommendations(
     project_type: str = Query(..., description="项目类型"),
-    languages: List[str] = Query(..., description="项目使用的编程语言列表")
+    languages: List[str] = Query(..., description="项目使用的编程语言列表"),
 ):
     """
     根据项目类型和编程语言获取工具推荐
@@ -239,17 +239,23 @@ async def get_tool_recommendations(
         推荐的工具列表和推荐原因
     """
     try:
-        recommendations = await mcp_service.get_recommended_tools(project_type, languages)
-        return JSONResponse(content={
-            "project_type": project_type,
-            "languages": languages,
-            "recommendations": recommendations,
-            "count": len(recommendations)
-        })
+        recommendations = await mcp_service.get_recommended_tools(
+            project_type, languages
+        )
+        return JSONResponse(
+            content={
+                "project_type": project_type,
+                "languages": languages,
+                "recommendations": recommendations,
+                "count": len(recommendations),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Error getting tool recommendations: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to get recommendations: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get recommendations: {str(e)}"
+        )
 
 
 @router.get("/capabilities", summary="获取 MCP 服务能力")
@@ -272,33 +278,34 @@ async def get_mcp_capabilities():
                 "execute_tool",
                 "validate_arguments",
                 "search_tools",
-                "get_recommendations"
+                "get_recommendations",
             ],
             "supported_categories": [category.value for category in ToolCategory],
             "authentication": "none",  # 目前不需要认证
-            "rate_limiting": {
-                "enabled": False,
-                "requests_per_minute": None
-            },
+            "rate_limiting": {"enabled": False, "requests_per_minute": None},
             "concurrent_executions": True,
             "sandbox_execution": True,
             "file_upload_support": False,
-            "streaming_output": False
+            "streaming_output": False,
         }
 
-        return JSONResponse(content={
-            "capabilities": capabilities,
-            "server_info": {
-                "name": status.get("name"),
-                "version": status.get("version"),
-                "tools_count": status.get("tools_count"),
-                "available_tools_count": status.get("available_tools_count")
+        return JSONResponse(
+            content={
+                "capabilities": capabilities,
+                "server_info": {
+                    "name": status.get("name"),
+                    "version": status.get("version"),
+                    "tools_count": status.get("tools_count"),
+                    "available_tools_count": status.get("available_tools_count"),
+                },
             }
-        })
+        )
 
     except Exception as e:
         logger.error(f"Error getting MCP capabilities: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to get capabilities: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get capabilities: {str(e)}"
+        )
 
 
 @router.post("/initialize", summary="初始化 MCP 服务")
@@ -311,17 +318,21 @@ async def initialize_mcp_service():
     """
     try:
         success = await mcp_service.initialize()
-        return JSONResponse(content={
-            "success": success,
-            "message": "MCP service initialized successfully" if success else "MCP service initialization failed"
-        })
+        return JSONResponse(
+            content={
+                "success": success,
+                "message": (
+                    "MCP service initialized successfully"
+                    if success
+                    else "MCP service initialization failed"
+                ),
+            }
+        )
     except Exception as e:
         logger.error(f"Error initializing MCP service: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to initialize MCP service: {str(e)}")
-
-
-
-
+        raise HTTPException(
+            status_code=500, detail=f"Failed to initialize MCP service: {str(e)}"
+        )
 
 
 async def _get_available_tool_names() -> List[str]:
