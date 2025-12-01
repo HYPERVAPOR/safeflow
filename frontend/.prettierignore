@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.next/
+out/
+
+# Production build
+build/
+dist/
+
+# Environment files
+.env*.local
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Generated files
+.next/
+out/
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Storybook
+storybook-static/
+
+# Misc
+.DS_Store
+*.pem
